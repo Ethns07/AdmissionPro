@@ -1,0 +1,90 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and role information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["super_admin", "admin", "admission_officer", "student", "parent", "guest"] },
+        "displayName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Category": {
+      "title": "Program Category",
+      "description": "Categories for educational programs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "Program": {
+      "title": "Program",
+      "description": "Educational program details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "description": "Program category" },
+        "imageUrl": { "type": "string" },
+        "brochureUrl": { "type": "string" },
+        "feeStructure": { "type": "object" },
+        "eligibilityRules": { "type": "array" },
+        "meritFormula": { "type": "string" },
+        "duration": { "type": "string", "description": "Program duration (e.g., 4 Years)" },
+        "deadline": { "type": "string", "format": "date-time", "description": "Program-specific application deadline" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["name", "isActive", "duration"]
+    },
+    "Application": {
+      "title": "Application",
+      "description": "Student admission application",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentUid": { "type": "string" },
+        "studentName": { "type": "string" },
+        "studentEmail": { "type": "string", "format": "email" },
+        "programId": { "type": "string" },
+        "programName": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "eligible", "not_eligible", "waitlist", "offer_extended", "enrolled"] },
+        "formData": { "type": "object" },
+        "documents": { "type": "array" },
+        "paymentStatus": { "type": "string", "enum": ["pending", "paid"] },
+        "paymentDetails": { "type": "object" },
+        "meritScore": { "type": "number" },
+        "isOffline": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["programId", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/programs/{programId}": {
+      "schema": "Program",
+      "description": "Available programs"
+    },
+    "/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Program categories"
+    },
+    "/applications/{applicationId}": {
+      "schema": "Application",
+      "description": "Admission applications"
+    }
+  }
+}

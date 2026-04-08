@@ -1,0 +1,173 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: uid
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - role: string (required, enum: super_admin, admin, admission_officer, student, parent, guest)
+    //   - displayName: string (optional)
+    //   - createdAt: timestamp (required)
+    //
+    // Collection: programs
+    // Document ID: programId
+    // Fields:
+    //   - name: string (required)
+    //   - description: string (optional)
+    //   - brochureUrl: string (optional)
+    //   - feeStructure: map (required)
+    //   - eligibilityRules: list (required)
+    //   - meritFormula: string (optional)
+    //   - isActive: bool (required)
+    //
+    // Collection: applications
+    // Document ID: applicationId
+    // Fields:
+    //   - studentUid: string (required)
+    //   - programId: string (required)
+    //   - status: string (required, enum: pending, eligible, not_eligible, waitlist, offer_extended, enrolled)
+    //   - formData: map (required)
+    //   - documents: list (required)
+    //   - paymentStatus: string (required, enum: pending, paid)
+    //   - paymentDetails: map (optional)
+    //   - meritScore: number (optional)
+    //   - isOffline: bool (required)
+    //   - createdAt: timestamp (required)
+    //   - updatedAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && getUserData().role == role;
+    }
+
+    function isAdmin() {
+      return hasRole('super_admin') || hasRole('admin') || 
+             (request.auth.token.email == "masif4732714@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isAdmissionOfficer() {
+      return hasRole('admission_officer') || isAdmin();
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasOnlyAllowedFields(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.uid is string && data.uid.size() > 0 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['super_admin', 'admin', 'admission_officer', 'student', 'parent', 'guest'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidProgram(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.isActive is bool &&
+             data.feeStructure is map &&
+             data.eligibilityRules is list &&
+             data.duration is string && data.duration.size() > 0 &&
+             (!('deadline' in data) || data.deadline is timestamp || data.deadline == null) &&
+             (!('imageUrl' in data) || data.imageUrl is string) &&
+             (!('category' in data) || data.category is string) &&
+             (!('brochureUrl' in data) || data.brochureUrl is string) &&
+             (!('meritFormula' in data) || data.meritFormula is string);
+    }
+
+    function isValidApplication(data) {
+      return data.studentUid is string && data.studentUid.size() > 0 &&
+             data.programId is string &&
+             data.status in ['pending', 'eligible', 'not_eligible', 'waitlist', 'offer_extended', 'enrolled'] &&
+             data.formData is map &&
+             data.paymentStatus in ['pending', 'paid'] &&
+             data.isOffline is bool &&
+             data.createdAt is timestamp &&
+             data.updatedAt is timestamp &&
+             (!('studentName' in data) || data.studentName is string) &&
+             (!('studentEmail' in data) || data.studentEmail is string) &&
+             (!('paymentDetails' in data) || data.paymentDetails is map);
+    }
+
+    function isValidCategory(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.createdAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /test/connection {
+      allow read: if true;
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmissionOfficer());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student';
+      allow update: if isAuthenticated() && (
+        (isOwner(userId) && request.resource.data.role == resource.data.role && isValidUser(request.resource.data)) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /programs/{programId} {
+      allow read: if resource.data.isActive == true || isAdmin();
+      allow create: if isAdmin() && isValidProgram(request.resource.data);
+      allow update: if isAdmin() && isValidProgram(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.studentUid) || 
+        isAdmissionOfficer() || 
+        (hasRole('parent') && resource.data.studentUid == getUserData().studentUid)
+      );
+      allow create: if isAuthenticated() && (
+        (isOwner(request.resource.data.studentUid) && !request.resource.data.isOffline) ||
+        isAdmissionOfficer()
+      ) && isValidApplication(request.resource.data);
+      allow update: if isAuthenticated() && (
+        (isOwner(resource.data.studentUid) && request.resource.data.status == resource.data.status && isValidApplication(request.resource.data)) ||
+        isAdmissionOfficer()
+      ) && (isAdmissionOfficer() ? isValidApplication(request.resource.data) : true);
+      allow delete: if isAdmin();
+    }
+  }
+}

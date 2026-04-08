@@ -1,0 +1,5 @@
+{
+  "name": "AdmissionPro",
+  "description": "Comprehensive Admission Management System with RBAC and Rule-Based Admission System.",
+  "requestFramePermissions": []
+}
