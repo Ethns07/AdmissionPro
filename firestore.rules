@@ -60,16 +60,20 @@ service cloud.firestore {
     }
 
     function hasRole(role) {
-      return isAuthenticated() && getUserData().role == role;
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             getUserData().role == role;
     }
 
     function isAdmin() {
-      return hasRole('super_admin') || hasRole('admin') || 
-             (request.auth.token.email == "masif4732714@gmail.com" && request.auth.token.email_verified == true);
+      return isAuthenticated() && (
+        (request.auth.token.email == "masif4732714@gmail.com" && request.auth.token.email_verified == true) ||
+        hasRole('super_admin') || hasRole('admin')
+      );
     }
 
     function isAdmissionOfficer() {
-      return hasRole('admission_officer') || isAdmin();
+      return isAdmin() || hasRole('admission_officer');
     }
 
     function isValidEmail(email) {
@@ -88,7 +92,9 @@ service cloud.firestore {
       return data.uid is string && data.uid.size() > 0 &&
              data.email is string && isValidEmail(data.email) &&
              data.role in ['super_admin', 'admin', 'admission_officer', 'student', 'parent', 'guest'] &&
-             data.createdAt is timestamp;
+             data.createdAt is timestamp &&
+             (!('assignedPrograms' in data) || data.assignedPrograms is list) &&
+             (!('theme' in data) || data.theme in ['light', 'dark']);
     }
 
     function isValidProgram(data) {
@@ -123,9 +129,22 @@ service cloud.firestore {
              data.createdAt is timestamp;
     }
 
+    function isValidPayment(data) {
+      return data.applicationId is string &&
+             data.amount is number &&
+             data.method is string &&
+             data.receiptNumber is string &&
+             data.date is timestamp &&
+             data.status is string;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
     match /test/connection {
       allow read: if true;
@@ -133,12 +152,23 @@ service cloud.firestore {
 
     match /categories/{categoryId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create: if isAdmin() && isValidCategory(request.resource.data) && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && 
+        request.resource.data.createdAt == resource.data.createdAt &&
+        isValidCategory(request.resource.data) && (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'description', 'updatedAt'])
+        ) && (
+          !('updatedAt' in request.resource.data) || request.resource.data.updatedAt == request.time
+        );
+      allow delete: if isAdmin();
     }
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwner(userId) || isAdmissionOfficer());
-      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student';
+      allow create: if isAuthenticated() && (
+        (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student') ||
+        isAdmin()
+      );
       allow update: if isAuthenticated() && (
         (isOwner(userId) && request.resource.data.role == resource.data.role && isValidUser(request.resource.data)) ||
         isAdmin()
@@ -167,6 +197,17 @@ service cloud.firestore {
         (isOwner(resource.data.studentUid) && request.resource.data.status == resource.data.status && isValidApplication(request.resource.data)) ||
         isAdmissionOfficer()
       ) && (isAdmissionOfficer() ? isValidApplication(request.resource.data) : true);
+      allow delete: if isAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && (
+        isAdmissionOfficer() || 
+        exists(/databases/$(database)/documents/applications/$(resource.data.applicationId)) &&
+        get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.studentUid == request.auth.uid
+      );
+      allow create: if isAuthenticated() && isAdmissionOfficer() && isValidPayment(request.resource.data);
+      allow update: if isAdmin() && isValidPayment(request.resource.data);
       allow delete: if isAdmin();
     }
   }

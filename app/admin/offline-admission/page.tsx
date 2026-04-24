@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-utils';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { 
   User, 
   Mail, 
@@ -139,26 +140,22 @@ export default function OfflineAdmissionPage() {
   };
 
   if (loading || authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-slate-900" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (success) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors duration-300">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }} 
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-12 rounded-3xl shadow-xl max-w-md w-full text-center"
+          className="bg-white dark:bg-slate-900 p-12 rounded-3xl shadow-xl max-w-md w-full text-center border border-slate-100 dark:border-slate-800"
         >
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h2 className="text-3xl font-display font-bold text-slate-900 mb-4">Application Created!</h2>
-          <p className="text-slate-600 mb-8">
+          <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-4">Application Created!</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-8">
             The offline application for <strong>{formData.studentName}</strong> has been successfully recorded and marked as paid.
           </p>
           <div className="flex flex-col gap-3">
@@ -179,13 +176,13 @@ export default function OfflineAdmissionPage() {
                   receiptNumber: ''
                 });
               }}
-              className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all"
+              className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-all"
             >
               Create Another
             </button>
             <Link
               href="/admin/applications"
-              className="w-full py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all block"
+              className="w-full py-3 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all block"
             >
               Back to Applications
             </Link>
@@ -196,71 +193,71 @@ export default function OfflineAdmissionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       <Navbar />
       
       <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <Link href="/admin/applications" className="text-slate-500 hover:text-slate-900 flex items-center gap-1 text-sm mb-2 transition-colors">
+            <Link href="/admin/applications" className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 text-sm mb-2 transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back to Applications
             </Link>
-            <h1 className="text-3xl font-display font-bold text-slate-900">New Offline Application</h1>
-            <p className="text-slate-500">Manually record an application received at the admission desk</p>
+            <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white">New Offline Application</h1>
+            <p className="text-slate-500 dark:text-slate-400">Manually record an application received at the admission desk</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Student Details */}
-          <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <User className="w-5 h-5 text-slate-400" /> Student Information
+          <section className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 dark:text-white">
+              <User className="w-5 h-5 text-slate-400 dark:text-slate-500" /> Student Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Full Name</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Full Name</label>
                 <input
                   type="text"
                   name="studentName"
                   required
                   value={formData.studentName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                   placeholder="John Doe"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Email Address</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
                 <input
                   type="email"
                   name="studentEmail"
                   required
                   value={formData.studentEmail}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                   placeholder="john@example.com"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Phone Number</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Phone Number</label>
                 <input
                   type="tel"
                   name="studentPhone"
                   required
                   value={formData.studentPhone}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                   placeholder="+1 234 567 890"
                 />
               </div>
               <div className="md:col-span-2 space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Residential Address</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Residential Address</label>
                 <textarea
                   name="address"
                   rows={2}
                   value={formData.address}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                   placeholder="123 Main St, City, Country"
                 />
               </div>
@@ -268,19 +265,19 @@ export default function OfflineAdmissionPage() {
           </section>
 
           {/* Program & Academic */}
-          <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-slate-400" /> Program & Academics
+          <section className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 dark:text-white">
+              <GraduationCap className="w-5 h-5 text-slate-400 dark:text-slate-500" /> Program & Academics
             </h2>
             <div className="grid grid-cols-1 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Select Program</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Select Program</label>
                 <select
                   name="programId"
                   required
                   value={formData.programId}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                 >
                   {programs.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
@@ -289,7 +286,7 @@ export default function OfflineAdmissionPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">12th Grade %</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">12th Grade %</label>
                   <input
                     type="number"
                     name="marks_12th"
@@ -297,18 +294,18 @@ export default function OfflineAdmissionPage() {
                     step="0.01"
                     value={formData.marks_12th}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                     placeholder="85.5"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Entrance Score</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Entrance Score</label>
                   <input
                     type="number"
                     name="entrance_score"
                     value={formData.entrance_score}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                     placeholder="Optional"
                   />
                 </div>
@@ -317,19 +314,19 @@ export default function OfflineAdmissionPage() {
           </section>
 
           {/* Payment Details */}
-          <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-slate-400" /> Payment Information
+          <section className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 dark:text-white">
+              <CreditCard className="w-5 h-5 text-slate-400 dark:text-slate-500" /> Payment Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Payment Method</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Payment Method</label>
                 <select
                   name="paymentMethod"
                   required
                   value={formData.paymentMethod}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                 >
                   <option value="cash">Cash</option>
                   <option value="cheque">Cheque</option>
@@ -338,26 +335,26 @@ export default function OfflineAdmissionPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Amount Paid ($)</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Amount Paid ($)</label>
                 <input
                   type="number"
                   name="paymentAmount"
                   required
                   value={formData.paymentAmount}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                   placeholder="e.g. 100"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Receipt / Ref Number</label>
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Receipt / Ref Number</label>
                 <input
                   type="text"
                   name="receiptNumber"
                   required
                   value={formData.receiptNumber}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 outline-none transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500/20 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
                   placeholder="REC-12345"
                 />
               </div>
@@ -368,7 +365,7 @@ export default function OfflineAdmissionPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-all shadow-lg shadow-slate-200 dark:shadow-slate-900/20 flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Create Offline Application'}
             </button>

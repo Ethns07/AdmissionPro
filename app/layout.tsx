@@ -23,8 +23,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable}`}>
-      <body suppressHydrationWarning className="font-sans antialiased bg-slate-50 text-slate-900">
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} dark`}>
+      <body suppressHydrationWarning className="font-sans antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-50 transition-colors duration-300">
         <FirebaseProvider>
           <ErrorBoundary>
             <RouteGuard>

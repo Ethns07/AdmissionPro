@@ -9,6 +9,9 @@
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["super_admin", "admin", "admission_officer", "student", "parent", "guest"] },
         "displayName": { "type": "string" },
+        "assignedPrograms": { "type": "array", "description": "List of program IDs assigned to an admission officer" },
+        "theme": { "type": "string", "enum": ["light", "dark"] },
+        "isApproved": { "type": "boolean", "description": "Whether the institutional member has been approved by a super admin" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "email", "role"]
@@ -67,6 +70,21 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["programId", "status"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Records of financial transactions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicationId": { "type": "string" },
+        "amount": { "type": "number" },
+        "method": { "type": "string" },
+        "receiptNumber": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "status": { "type": "string" }
+      },
+      "required": ["applicationId", "amount", "method"]
     }
   },
   "firestore": {
@@ -85,6 +103,10 @@
     "/applications/{applicationId}": {
       "schema": "Application",
       "description": "Admission applications"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Financial records"
     }
   }
 }

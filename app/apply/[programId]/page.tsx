@@ -7,6 +7,7 @@ import { Navbar } from '@/components/Navbar';
 import { doc, getDoc, addDoc, collection, serverTimestamp, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { handleFirestoreError, OperationType, formatTimestamp } from '@/lib/firestore-utils';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { 
   GraduationCap, 
   User, 
@@ -134,26 +135,22 @@ export default function ApplyPage() {
   };
 
   if (loading || authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-slate-900" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!program || (program.isActive === false && !['admin', 'super_admin', 'admission_officer'].includes(profile?.role || ''))) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
         <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           {!program ? 'Program Not Found' : 'Applications Closed'}
         </h1>
-        <p className="text-slate-500 mt-2 text-center max-w-md">
+        <p className="text-slate-500 dark:text-slate-400 mt-2 text-center max-w-md">
           {!program 
             ? 'The program you are trying to apply for does not exist.'
             : 'Applications for this program are currently closed. Please check back later or explore other programs.'}
         </p>
-        <button onClick={() => router.push('/programs')} className="mt-6 px-6 py-2 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">
+        <button onClick={() => router.push('/programs')} className="mt-6 px-6 py-2 bg-slate-900 dark:bg-indigo-600 text-white rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-indigo-700 transition-all">
           Back to Programs
         </button>
       </div>
@@ -161,15 +158,15 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
       <Navbar />
       
       <main className="max-w-4xl mx-auto px-4 py-12">
         <div className="mb-12 text-center">
-          <h1 className="text-3xl font-display font-bold text-slate-900 mb-2">Apply for {program.name}</h1>
+          <h1 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-2">Apply for {program.name}</h1>
           <div className="flex flex-col items-center gap-1">
             {program.deadline && (
-              <p className="text-xs font-semibold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
+              <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-3 py-1 rounded-full border border-amber-100 dark:border-amber-500/20">
                 Application Deadline: {formatTimestamp(program.deadline)}
               </p>
             )}
@@ -178,23 +175,23 @@ export default function ApplyPage() {
 
         {/* Program Fees Section */}
         <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
               <Database className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Application Fee</p>
-              <p className="text-2xl font-bold text-slate-900">${program.feeStructure?.applicationFee || 0}</p>
+              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Application Fee</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">${program.feeStructure?.applicationFee || 0}</p>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <Database className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Admission Fee</p>
-                <p className="text-2xl font-bold text-slate-900">${program.feeStructure?.admissionFee || 0}</p>
+                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Admission Fee</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">${program.feeStructure?.admissionFee || 0}</p>
               </div>
             </div>
             {program.brochureUrl && (
@@ -202,7 +199,7 @@ export default function ApplyPage() {
                 href={program.brochureUrl} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                className="flex items-center gap-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 Fee Structure
@@ -216,65 +213,65 @@ export default function ApplyPage() {
           {[1, 2, 3].map((s) => (
             <React.Fragment key={s}>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors ${
-                step >= s ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-500'
+                step >= s ? 'bg-slate-900 dark:bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-500'
               }`}>
                 {step > s ? <CheckCircle2 className="w-6 h-6" /> : s}
               </div>
-              {s < 3 && <div className={`w-16 h-1 border-t-2 ${step > s ? 'border-slate-900' : 'border-slate-200'}`} />}
+              {s < 3 && <div className={`w-16 h-1 border-t-2 ${step > s ? 'border-slate-900 dark:border-indigo-600' : 'border-slate-200 dark:border-slate-800'}`} />}
             </React.Fragment>
           ))}
         </div>
 
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-200 border border-slate-100 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200 dark:shadow-slate-950/50 border border-slate-100 dark:border-slate-800 overflow-hidden">
           {step === 1 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-8 lg:p-12">
-              <h2 className="text-xl font-bold mb-8 flex items-center gap-2">
-                <User className="w-5 h-5 text-slate-400" /> Personal Information
+              <h2 className="text-xl font-bold mb-8 flex items-center gap-2 text-slate-900 dark:text-white">
+                <User className="w-5 h-5 text-slate-400 dark:text-slate-500" /> Personal Information
               </h2>
               <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Full Name</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Full Name</label>
                   <input
                     type="text"
                     name="fullName"
                     required
                     value={formData.fullName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                     placeholder="John Doe"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Email Address</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Email Address</label>
                   <input
                     type="email"
                     name="email"
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                     placeholder="john@example.com"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Phone Number</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Phone Number</label>
                   <input
                     type="tel"
                     name="phone"
                     required
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                     placeholder="+1 234 567 890"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Category</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Category</label>
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                   >
                     <option value="general">General</option>
                     <option value="obc">OBC</option>
@@ -284,7 +281,7 @@ export default function ApplyPage() {
                   </select>
                 </div>
                 
-                <div className="md:col-span-2 p-6 bg-slate-900 rounded-2xl text-white">
+                <div className="md:col-span-2 p-6 bg-slate-900 dark:bg-slate-800 rounded-2xl text-white">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <h3 className="font-bold flex items-center gap-2">
@@ -333,13 +330,13 @@ export default function ApplyPage() {
                 </div>
 
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Residential Address</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Residential Address</label>
                   <textarea
                     name="address"
                     rows={3}
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                     placeholder="123 Main St, City, Country"
                   />
                 </div>
@@ -347,7 +344,7 @@ export default function ApplyPage() {
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all"
+                    className="w-full py-4 bg-slate-900 dark:bg-indigo-600 text-white rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-indigo-700 transition-all"
                   >
                     Continue to Academic Details
                   </button>
@@ -358,12 +355,12 @@ export default function ApplyPage() {
 
           {step === 2 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-8 lg:p-12">
-              <h2 className="text-xl font-bold mb-8 flex items-center gap-2">
-                <GraduationCap className="w-5 h-5 text-slate-400" /> Academic Details
+              <h2 className="text-xl font-bold mb-8 flex items-center gap-2 text-slate-900 dark:text-white">
+                <GraduationCap className="w-5 h-5 text-slate-400 dark:text-slate-500" /> Academic Details
               </h2>
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">12th Grade Percentage (%)</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">12th Grade Percentage (%)</label>
                   <input
                     type="number"
                     name="marks_12th"
@@ -371,39 +368,39 @@ export default function ApplyPage() {
                     step="0.01"
                     value={formData.marks_12th}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                     placeholder="e.g. 85.5"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Mathematics Score</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Mathematics Score</label>
                   <input
                     type="number"
                     name="math_score"
                     required
                     value={formData.math_score}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                     placeholder="e.g. 90"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-700">Entrance Score (Optional)</label>
+                  <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Entrance Score (Optional)</label>
                   <input
                     type="number"
                     name="entrance_score"
                     value={formData.entrance_score}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-600 dark:focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500"
                     placeholder="e.g. 150"
                   />
                 </div>
                 
                 <div className="md:col-span-2 pt-6 space-y-4">
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-3">
-                    <FileText className="w-5 h-5 text-slate-400 mt-0.5" />
-                    <div className="text-sm text-slate-600">
-                      <p className="font-semibold text-slate-900 mb-1">Document Upload Required</p>
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-slate-400 dark:text-slate-500 mt-0.5" />
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      <p className="font-semibold text-slate-900 dark:text-white mb-1">Document Upload Required</p>
                       <p>Please ensure you have scanned copies of your 10th & 12th marksheets, and a valid ID proof ready for verification.</p>
                     </div>
                   </div>
@@ -412,14 +409,14 @@ export default function ApplyPage() {
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="flex-1 py-4 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all"
+                      className="flex-1 py-4 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                     >
                       Back
                     </button>
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="flex-[2] py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                      className="flex-[2] py-4 bg-slate-900 dark:bg-indigo-600 text-white rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
                     >
                       {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Submit Application'}
                     </button>
@@ -431,24 +428,24 @@ export default function ApplyPage() {
 
           {step === 3 && (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-12 text-center">
-              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h2 className="text-3xl font-display font-bold text-slate-900 mb-4">Application Submitted!</h2>
-              <p className="text-slate-600 mb-8 max-w-md mx-auto">
+              <h2 className="text-3xl font-display font-bold text-slate-900 dark:text-white mb-4">Application Submitted!</h2>
+              <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-md mx-auto">
                 Your application for <strong>{program.name}</strong> has been received. 
                 Our admission team will review your details and update you shortly.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button
                   onClick={() => router.push('/dashboard')}
-                  className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all"
+                  className="px-8 py-3 bg-slate-900 dark:bg-indigo-600 text-white rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-indigo-700 transition-all"
                 >
                   Go to Dashboard
                 </button>
                 <button
                   onClick={() => router.push('/programs')}
-                  className="px-8 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition-all"
+                  className="px-8 py-3 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                 >
                   Browse More Programs
                 </button>

@@ -23,6 +23,7 @@ interface UserProfile {
   role: 'super_admin' | 'admin' | 'admission_officer' | 'student' | 'parent' | 'guest';
   displayName?: string;
   studentUid?: string; // For parents
+  theme?: 'light' | 'dark';
 }
 
 interface FirebaseContextType {
@@ -47,6 +48,12 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [loading, setLoading] = useState(true);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
+  // Always apply dark theme
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.add('dark');
+  }, []);
+
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
@@ -58,7 +65,8 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const unsubscribeProfile = onSnapshot(userDocRef, async (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data() as UserProfile;
-            // Auto-upgrade to super_admin if email matches
+            
+            // Sync theme from profile if it exists (deprecated but keeping for profile structure compatibility if needed)
             if (firebaseUser.email === 'masif4732714@gmail.com' && data.role !== 'super_admin') {
               await updateDoc(userDocRef, { role: 'super_admin' });
             }
@@ -86,7 +94,7 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
 
     return () => unsubscribeAuth();
-  }, []);
+  }, [user]);
 
   return (
     <FirebaseContext.Provider value={{ user, profile, loading, isAuthReady }}>

@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useFirebase } from './FirebaseProvider';
 import { useRouter, usePathname } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { LoadingSpinner } from './LoadingSpinner';
 
 const PUBLIC_ROUTES = ['/', '/login', '/programs'];
 const ADMIN_ROUTES = ['/admin'];
@@ -53,11 +53,7 @@ export const RouteGuard: React.FC<{ children: React.ReactNode }> = ({ children }
   );
 
   if (loading && !isPublicRoute) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return <>{children}</>;
