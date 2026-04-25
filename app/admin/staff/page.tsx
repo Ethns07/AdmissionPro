@@ -96,7 +96,7 @@ export default function StaffManagementPage() {
   }, []);
 
   const handleToggleApproval = async (user: any) => {
-    if (user.role === 'super_admin' && !profile?.role === 'super_admin') return;
+    if (user.role === 'super_admin' && profile?.role !== 'super_admin') return;
     
     setUpdating(true);
     try {

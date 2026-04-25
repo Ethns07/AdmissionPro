@@ -68,12 +68,12 @@ service cloud.firestore {
     function isAdmin() {
       return isAuthenticated() && (
         (request.auth.token.email == "masif4732714@gmail.com" && request.auth.token.email_verified == true) ||
-        hasRole('super_admin') || hasRole('admin')
+        (getUserData().get('isApproved', false) == true && (hasRole('super_admin') || hasRole('admin')))
       );
     }
 
     function isAdmissionOfficer() {
-      return isAdmin() || hasRole('admission_officer');
+      return (isAuthenticated() && getUserData().get('isApproved', false) == true && hasRole('admission_officer')) || isAdmin();
     }
 
     function isValidEmail(email) {
@@ -93,6 +93,7 @@ service cloud.firestore {
              data.email is string && isValidEmail(data.email) &&
              data.role in ['super_admin', 'admin', 'admission_officer', 'student', 'parent', 'guest'] &&
              data.createdAt is timestamp &&
+             (!('isApproved' in data) || data.isApproved is bool) &&
              (!('assignedPrograms' in data) || data.assignedPrograms is list) &&
              (!('theme' in data) || data.theme in ['light', 'dark']);
     }
@@ -170,7 +171,10 @@ service cloud.firestore {
         isAdmin()
       );
       allow update: if isAuthenticated() && (
-        (isOwner(userId) && request.resource.data.role == resource.data.role && isValidUser(request.resource.data)) ||
+        (isOwner(userId) && 
+         request.resource.data.role == resource.data.role && 
+         request.resource.data.get('isApproved', false) == resource.data.get('isApproved', false) &&
+         isValidUser(request.resource.data)) ||
         isAdmin()
       );
       allow delete: if isAdmin();

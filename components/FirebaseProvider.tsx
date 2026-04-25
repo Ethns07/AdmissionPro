@@ -24,6 +24,7 @@ interface UserProfile {
   displayName?: string;
   studentUid?: string; // For parents
   theme?: 'light' | 'dark';
+  isApproved?: boolean;
 }
 
 interface FirebaseContextType {

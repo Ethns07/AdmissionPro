@@ -463,7 +463,7 @@ export default function NewProgramPage() {
                     />
                     {customImageUrl && (
                       <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
-                        {/* Use native img for live preview of external URLs to avoid hostname configuration crashes during typing */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                           src={customImageUrl} 
                           alt="Preview" 

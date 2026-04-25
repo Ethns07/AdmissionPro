@@ -396,6 +396,7 @@ export default function EditProgramPage() {
                       <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-3">Selected Preview</p>
                       <div className="relative aspect-video max-w-xs rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-800 shadow-sm">
                         {imageMode === 'url' ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img 
                             src={customImageUrl} 
                             alt="Final Selection Preview" 

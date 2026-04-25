@@ -41,10 +41,13 @@ export const Navbar = () => {
     setShowUserMenu(false);
   };
 
+  const isStaff = ['admin', 'super_admin', 'admission_officer'].includes(profile?.role || '');
+  const isApproved = profile?.isApproved || profile?.role === 'super_admin' || user?.email === 'masif4732714@gmail.com';
+
   const navLinks = [
     { name: 'Home', href: '/', icon: GraduationCap, roles: ['guest', 'student', 'admin', 'super_admin', 'admission_officer', 'parent'] },
     { name: 'Programs', href: '/programs', icon: BookOpen, roles: ['guest', 'student', 'admin', 'super_admin', 'admission_officer', 'parent'] },
-    { name: 'Dashboard', href: ['admin', 'super_admin', 'admission_officer'].includes(profile?.role || '') ? '/admin' : '/dashboard', icon: LayoutDashboard, roles: ['student', 'admin', 'super_admin', 'admission_officer', 'parent'] },
+    { name: 'Dashboard', href: (isStaff && isApproved) ? '/admin' : '/dashboard', icon: LayoutDashboard, roles: ['student', 'admin', 'super_admin', 'admission_officer', 'parent'] },
     { name: 'Applications', href: '/admin/applications', icon: FileText, roles: ['admin', 'super_admin', 'admission_officer'] },
     { name: 'Staff', href: '/admin/staff', icon: Users, roles: ['admin', 'super_admin'] },
   ];
