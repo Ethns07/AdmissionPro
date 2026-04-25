@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { motion } from 'motion/react';
+import { useFirebase } from '@/components/FirebaseProvider';
 import { 
   ArrowRight, 
   CheckCircle2, 
@@ -17,6 +18,9 @@ import {
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const { profile } = useFirebase();
+  const isStudent = profile && profile.role === 'student';
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 transition-colors duration-300">
       <Navbar />
@@ -360,18 +364,20 @@ export default function LandingPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                   <Link
-                    href="/programs"
+                    href={profile ? "/dashboard" : "/programs"}
                     className="w-full sm:w-auto inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-indigo-600 bg-white rounded-2xl hover:bg-indigo-50 transition-all shadow-xl active:scale-95 group"
                   >
-                    Get Started Now
+                    {profile ? "Go to Dashboard" : "Get Started Now"}
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
                   </Link>
-                  <Link
-                    href="/login?type=institution"
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white border-2 border-white/30 rounded-2xl hover:bg-white/10 transition-all active:scale-95"
-                  >
-                    Institutional Login
-                  </Link>
+                  {!isStudent && (
+                    <Link
+                      href="/login?type=institution"
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white border-2 border-white/30 rounded-2xl hover:bg-white/10 transition-all active:scale-95"
+                    >
+                      Institutional Login
+                    </Link>
+                  )}
                 </div>
                 <p className="mt-10 text-indigo-200 text-sm font-medium">
                   Free consultation available for new institutions.

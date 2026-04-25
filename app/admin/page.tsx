@@ -71,8 +71,17 @@ export default function AdminDashboardPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
-    if (!loading && (!user || !['admin', 'super_admin', 'admission_officer'].includes(profile?.role || ''))) {
-      router.push('/dashboard');
+    if (!loading && user && profile) {
+      const isStaff = ['admin', 'super_admin', 'admission_officer'].includes(profile.role);
+      const isApproved = profile.isApproved || profile.role === 'super_admin';
+      
+      if (!isStaff) {
+        router.push('/dashboard');
+      } else if (!isApproved) {
+        router.push('/login?error=pending_approval');
+      }
+    } else if (!loading && !user) {
+      router.push('/login');
     }
   }, [user, profile, loading, router]);
 
@@ -199,13 +208,15 @@ export default function AdminDashboardPage() {
               <Activity className="w-4 h-4" />
               System Logs
             </button>
-            <Link 
-              href="/admin/programs/new"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg dark:shadow-indigo-900/20 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              New Program
-            </Link>
+            {['admin', 'super_admin'].includes(profile?.role || '') && (
+              <Link 
+                href="/admin/programs/new"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg dark:shadow-indigo-900/20 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                New Program
+              </Link>
+            )}
           </div>
         </div>
 
