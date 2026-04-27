@@ -11,7 +11,8 @@ import {
   getDocs, 
   query, 
   orderBy,
-  Timestamp
+  Timestamp,
+  where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-utils';
@@ -76,7 +77,12 @@ export default function NewProgramPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const snap = await getDocs(query(collection(db, 'categories'), orderBy('name', 'asc')));
+        let qRef = query(collection(db, 'categories'), orderBy('name', 'asc'));
+        if (profile?.role !== 'super_admin' && profile?.instituteId) {
+          qRef = query(collection(db, 'categories'), where('instituteId', '==', profile.instituteId), orderBy('name', 'asc'));
+        }
+        
+        const snap = await getDocs(qRef);
         const cats = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
         setCategories(cats);
         if (cats.length > 0) {
@@ -88,8 +94,8 @@ export default function NewProgramPage() {
         setLoading(false);
       }
     };
-    fetchCategories();
-  }, []);
+    if (profile) fetchCategories();
+  }, [profile]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -145,6 +151,7 @@ export default function NewProgramPage() {
         eligibilityRules: eligibilityRules.map(r => ({ ...r, value: parseFloat(r.value as any) })),
         meritFormula: formData.meritFormula,
         duration: formData.duration,
+        instituteId: profile?.instituteId || 'GLOBAL',
         deadline: formData.deadline ? Timestamp.fromDate(new Date(formData.deadline)) : null,
         isActive: formData.isActive,
         createdAt: serverTimestamp(),

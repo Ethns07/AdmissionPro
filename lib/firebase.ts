@@ -1,12 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { 
+  initializeFirestore, 
+  doc, 
+  getDocFromServer,
+  memoryLocalCache
+} from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 
-// Use initializeFirestore to include settings for better connectivity in restricted environments
+// Use memoryLocalCache to prevent IndexedDB errors in iframe/restricted environments
 export const db = initializeFirestore(app, {
+  localCache: memoryLocalCache(),
   experimentalForceLongPolling: true,
 }, firebaseConfig.firestoreDatabaseId);
 

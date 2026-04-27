@@ -12,7 +12,8 @@ import {
   doc, 
   updateDoc, 
   deleteDoc,
-  serverTimestamp
+  serverTimestamp,
+  where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-utils';
@@ -56,7 +57,11 @@ export default function ProgramsManagementPage() {
 
   useEffect(() => {
     // Listen to programs
-    const q = query(collection(db, 'programs'), orderBy('name', 'asc'));
+    let q = query(collection(db, 'programs'), orderBy('name', 'asc'));
+    if (profile?.role !== 'super_admin' && profile?.instituteId) {
+      q = query(collection(db, 'programs'), where('instituteId', '==', profile.instituteId), orderBy('name', 'asc'));
+    }
+    
     const unsubscribePrograms = onSnapshot(q, (snapshot) => {
       setPrograms(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
@@ -65,7 +70,11 @@ export default function ProgramsManagementPage() {
     });
 
     // Listen to categories
-    const catQ = query(collection(db, 'categories'), orderBy('name', 'asc'));
+    let catQ = query(collection(db, 'categories'), orderBy('name', 'asc'));
+    if (profile?.role !== 'super_admin' && profile?.instituteId) {
+      catQ = query(collection(db, 'categories'), where('instituteId', '==', profile.instituteId), orderBy('name', 'asc'));
+    }
+    
     const unsubscribeCategories = onSnapshot(catQ, (snapshot) => {
       setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (error) => {
@@ -76,7 +85,7 @@ export default function ProgramsManagementPage() {
       unsubscribePrograms();
       unsubscribeCategories();
     };
-  }, []);
+  }, [profile]);
 
   const handleToggleStatus = async (programId: string, currentStatus: boolean) => {
     try {

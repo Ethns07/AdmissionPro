@@ -17,15 +17,29 @@ export default function ProgramsPage() {
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [institutes, setInstitutes] = useState<any[]>([]);
+  const [selectedInstitute, setSelectedInstitute] = useState<string>('all');
 
   useEffect(() => {
+    // Fetch institutes
+    const unsubscribeInstitutes = onSnapshot(collection(db, 'institutes'), (snapshot) => {
+      setInstitutes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
     const isAdmin = profile && ['admin', 'super_admin', 'admission_officer'].includes(profile.role);
     
-    const q = isAdmin 
-      ? query(collection(db, 'programs'))
-      : query(collection(db, 'programs'), where('isActive', '==', true));
+    let q;
+    if (profile?.role === 'super_admin') {
+      q = query(collection(db, 'programs'));
+    } else if (isAdmin && profile?.instituteId) {
+      // Show their own programs (active or inactive)
+      q = query(collection(db, 'programs'), where('instituteId', '==', profile.instituteId));
+    } else {
+      // Guest or staff without institute assigned yet: only active programs
+      q = query(collection(db, 'programs'), where('isActive', '==', true));
+    }
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribePrograms = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPrograms(data);
       setLoading(false);
@@ -34,14 +48,22 @@ export default function ProgramsPage() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeInstitutes();
+      unsubscribePrograms();
+    };
   }, [profile]);
 
-  const filteredPrograms = programs.filter(program => 
-    program.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    program.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (program.category && program.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredPrograms = programs.filter(program => {
+    const matchesSearch = 
+      program.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      program.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (program.category && program.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesInstitute = selectedInstitute === 'all' || program.instituteId === selectedInstitute;
+    
+    return matchesSearch && matchesInstitute;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
@@ -63,31 +85,55 @@ export default function ProgramsPage() {
             Find the right fit for your career goals.
           </p>
 
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto relative group">
-            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search programs by name, category, or description..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-14 pr-14 py-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 dark:focus:border-indigo-500 shadow-xl shadow-slate-200/20 dark:shadow-slate-950/50 transition-all"
-            />
-            <AnimatePresence>
-              {searchQuery && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+          {/* Search & Filter */}
+          <div className="max-w-4xl mx-auto space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-grow relative group">
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400 transition-colors" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search programs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full pl-14 pr-14 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 dark:focus:border-indigo-500 shadow-lg shadow-slate-200/10 transition-all font-medium"
+                />
+                <AnimatePresence>
+                  {searchQuery && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      onClick={() => setSearchQuery('')}
+                      className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    >
+                      <X className="h-5 w-5" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
+              </div>
+              
+              <div className="md:w-64">
+                <select
+                  value={selectedInstitute}
+                  onChange={(e) => setSelectedInstitute(e.target.value)}
+                  className="w-full h-full px-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 dark:focus:border-indigo-500 shadow-lg shadow-slate-200/10 transition-all font-medium appearance-none"
+                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.25rem' }}
                 >
-                  <X className="h-5 w-5" />
-                </motion.button>
-              )}
-            </AnimatePresence>
+                  <option value="all">All Institutes</option>
+                  {institutes.map(inst => (
+                    <option key={inst.id} value={inst.id}>{inst.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {selectedInstitute !== 'all' && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl w-fit text-sm font-bold">
+                <Info className="w-4 h-4" />
+                Showing programs from: {institutes.find(i => i.id === selectedInstitute)?.name}
+              </div>
+            )}
           </div>
         </div>
 
@@ -140,6 +186,9 @@ export default function ProgramsPage() {
                 </Link>
                 
                 <div className="p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{institutes.find(inst => inst.id === program.instituteId)?.name || 'Global Institute'}</span>
+                  </div>
                   <Link href={`/programs/${program.id}`} className="block group/title">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover/title:text-indigo-600 dark:group-hover/title:text-indigo-400 transition-colors leading-tight">{program.name}</h3>
                   </Link>

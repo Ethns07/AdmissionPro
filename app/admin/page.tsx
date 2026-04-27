@@ -10,7 +10,8 @@ import {
   onSnapshot, 
   orderBy,
   limit,
-  getDocs
+  getDocs,
+  where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-utils';
@@ -89,7 +90,11 @@ export default function AdminDashboardPage() {
     if (!user || !profile) return;
 
     // 1. Listen to Applications for stats and recent list
-    const appsQuery = query(collection(db, 'applications'), orderBy('createdAt', 'desc'));
+    let appsQuery = query(collection(db, 'applications'), orderBy('createdAt', 'desc'));
+    if (profile.role !== 'super_admin' && profile.instituteId) {
+      appsQuery = query(collection(db, 'applications'), where('instituteId', '==', profile.instituteId), orderBy('createdAt', 'desc'));
+    }
+
     const unsubscribeApps = onSnapshot(appsQuery, (snapshot) => {
       const apps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
@@ -131,8 +136,13 @@ export default function AdminDashboardPage() {
     });
 
     // 2. Listen to Programs and Categories for distribution
-    const programsQuery = query(collection(db, 'programs'));
-    const categoriesQuery = query(collection(db, 'categories'));
+    let programsQuery = query(collection(db, 'programs'));
+    let categoriesQuery = query(collection(db, 'categories'));
+
+    if (profile.role !== 'super_admin' && profile.instituteId) {
+      programsQuery = query(collection(db, 'programs'), where('instituteId', '==', profile.instituteId));
+      categoriesQuery = query(collection(db, 'categories'), where('instituteId', '==', profile.instituteId));
+    }
 
     const unsubscribeProgs = onSnapshot(programsQuery, (progSnapshot) => {
       const active = progSnapshot.docs.filter(doc => doc.data().isActive !== false).length;
@@ -158,7 +168,11 @@ export default function AdminDashboardPage() {
     });
 
     // 3. Listen to Users for total count and distribution
-    const usersQuery = query(collection(db, 'users'));
+    let usersQuery = query(collection(db, 'users'));
+    if (profile.role !== 'super_admin' && profile.instituteId) {
+      usersQuery = query(collection(db, 'users'), where('instituteId', '==', profile.instituteId));
+    }
+
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
       const users = snapshot.docs.map(doc => doc.data());
       setStats(prev => ({ ...prev, totalUsers: snapshot.size }));

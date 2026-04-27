@@ -55,25 +55,45 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        (request.auth.token.email == "masif4732714@gmail.com" && request.auth.token.email_verified == true) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isApproved', false) == true)
+      );
     }
 
     function hasRole(role) {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-             getUserData().role == role;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == role;
     }
 
     function isAdmin() {
-      return isAuthenticated() && (
-        (request.auth.token.email == "masif4732714@gmail.com" && request.auth.token.email_verified == true) ||
-        (getUserData().get('isApproved', false) == true && (hasRole('super_admin') || hasRole('admin')))
-      );
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isApproved', false) == true && 
+             hasRole('admin');
     }
 
     function isAdmissionOfficer() {
-      return (isAuthenticated() && getUserData().get('isApproved', false) == true && hasRole('admission_officer')) || isAdmin();
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isApproved', false) == true && 
+             hasRole('admission_officer');
+    }
+
+    function isStaff() {
+      return isSuperAdmin() || isAdmin() || isAdmissionOfficer();
+    }
+
+    function belongsToInstitute(instituteId) {
+      return isSuperAdmin() || (
+        isStaff() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('instituteId', '') == instituteId
+      );
     }
 
     function isValidEmail(email) {
@@ -94,8 +114,15 @@ service cloud.firestore {
              data.role in ['super_admin', 'admin', 'admission_officer', 'student', 'parent', 'guest'] &&
              data.createdAt is timestamp &&
              (!('isApproved' in data) || data.isApproved is bool) &&
+             (!('instituteId' in data) || data.instituteId is string) &&
              (!('assignedPrograms' in data) || data.assignedPrograms is list) &&
              (!('theme' in data) || data.theme in ['light', 'dark']);
+    }
+
+    function isValidInstitute(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
+             data.adminId is string &&
+             data.createdAt is timestamp;
     }
 
     function isValidProgram(data) {
@@ -104,6 +131,7 @@ service cloud.firestore {
              data.feeStructure is map &&
              data.eligibilityRules is list &&
              data.duration is string && data.duration.size() > 0 &&
+             data.instituteId is string &&
              (!('deadline' in data) || data.deadline is timestamp || data.deadline == null) &&
              (!('imageUrl' in data) || data.imageUrl is string) &&
              (!('category' in data) || data.category is string) &&
@@ -114,6 +142,7 @@ service cloud.firestore {
     function isValidApplication(data) {
       return data.studentUid is string && data.studentUid.size() > 0 &&
              data.programId is string &&
+             data.instituteId is string &&
              data.status in ['pending', 'eligible', 'not_eligible', 'waitlist', 'offer_extended', 'enrolled'] &&
              data.formData is map &&
              data.paymentStatus in ['pending', 'paid'] &&
@@ -127,6 +156,7 @@ service cloud.firestore {
 
     function isValidCategory(data) {
       return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.instituteId is string &&
              data.createdAt is timestamp;
     }
 
@@ -151,68 +181,80 @@ service cloud.firestore {
       allow read: if true;
     }
 
+    match /institutes/{instituteId} {
+      allow read: if true;
+      allow create: if isSuperAdmin() && isValidInstitute(request.resource.data);
+      allow update: if isSuperAdmin() && isValidInstitute(request.resource.data);
+      allow delete: if isSuperAdmin();
+    }
+
     match /categories/{categoryId} {
       allow read: if true;
-      allow create: if isAdmin() && isValidCategory(request.resource.data) && request.resource.data.createdAt == request.time;
-      allow update: if isAdmin() && 
+      allow create: if belongsToInstitute(request.resource.data.instituteId) && isValidCategory(request.resource.data) && request.resource.data.createdAt == request.time;
+      allow update: if belongsToInstitute(resource.data.instituteId) && 
         request.resource.data.createdAt == resource.data.createdAt &&
         isValidCategory(request.resource.data) && (
           request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'description', 'updatedAt'])
         ) && (
           !('updatedAt' in request.resource.data) || request.resource.data.updatedAt == request.time
         );
-      allow delete: if isAdmin();
+      allow delete: if belongsToInstitute(resource.data.instituteId);
     }
 
     match /users/{userId} {
-      allow read: if isAuthenticated() && (isOwner(userId) || isAdmissionOfficer());
+      allow read: if isAuthenticated() && (isOwner(userId) || isSuperAdmin() || belongsToInstitute(resource.data.get('instituteId', '')));
       allow create: if isAuthenticated() && (
         (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student') ||
-        isAdmin()
+        isSuperAdmin()
       );
       allow update: if isAuthenticated() && (
         (isOwner(userId) && 
          request.resource.data.role == resource.data.role && 
          request.resource.data.get('isApproved', false) == resource.data.get('isApproved', false) &&
+         request.resource.data.get('instituteId', '') == resource.data.get('instituteId', '') &&
          isValidUser(request.resource.data)) ||
-        isAdmin()
+        isSuperAdmin() ||
+        (belongsToInstitute(resource.data.get('instituteId', '')) && request.resource.data.get('instituteId', '') == resource.data.get('instituteId', ''))
       );
-      allow delete: if isAdmin();
+      allow delete: if isSuperAdmin();
     }
 
     match /programs/{programId} {
-      allow read: if resource.data.isActive == true || isAdmin();
-      allow create: if isAdmin() && isValidProgram(request.resource.data);
-      allow update: if isAdmin() && isValidProgram(request.resource.data);
-      allow delete: if isAdmin();
+      allow read: if resource.data.isActive == true || belongsToInstitute(resource.data.instituteId);
+      allow create: if belongsToInstitute(request.resource.data.instituteId) && isValidProgram(request.resource.data);
+      allow update: if belongsToInstitute(resource.data.instituteId) && isValidProgram(request.resource.data);
+      allow delete: if belongsToInstitute(resource.data.instituteId);
     }
 
     match /applications/{applicationId} {
       allow read: if isAuthenticated() && (
         isOwner(resource.data.studentUid) || 
-        isAdmissionOfficer() || 
+        belongsToInstitute(resource.data.instituteId) || 
         (hasRole('parent') && resource.data.studentUid == getUserData().studentUid)
       );
       allow create: if isAuthenticated() && (
         (isOwner(request.resource.data.studentUid) && !request.resource.data.isOffline) ||
-        isAdmissionOfficer()
+        belongsToInstitute(request.resource.data.instituteId)
       ) && isValidApplication(request.resource.data);
       allow update: if isAuthenticated() && (
         (isOwner(resource.data.studentUid) && request.resource.data.status == resource.data.status && isValidApplication(request.resource.data)) ||
-        isAdmissionOfficer()
-      ) && (isAdmissionOfficer() ? isValidApplication(request.resource.data) : true);
-      allow delete: if isAdmin();
+        belongsToInstitute(resource.data.instituteId)
+      ) && (isStaff() ? isValidApplication(request.resource.data) : true);
+      allow delete: if belongsToInstitute(resource.data.instituteId);
     }
 
     match /payments/{paymentId} {
       allow read: if isAuthenticated() && (
-        isAdmissionOfficer() || 
-        exists(/databases/$(database)/documents/applications/$(resource.data.applicationId)) &&
-        get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.studentUid == request.auth.uid
+        belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId) || 
+        (exists(/databases/$(database)/documents/applications/$(resource.data.applicationId)) &&
+         get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.studentUid == request.auth.uid)
       );
-      allow create: if isAuthenticated() && isAdmissionOfficer() && isValidPayment(request.resource.data);
-      allow update: if isAdmin() && isValidPayment(request.resource.data);
-      allow delete: if isAdmin();
+      allow create: if isAuthenticated() && 
+        belongsToInstitute(get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.instituteId) && 
+        isValidPayment(request.resource.data);
+      allow update: if belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId) && 
+        isValidPayment(request.resource.data);
+      allow delete: if belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId);
     }
   }
 }

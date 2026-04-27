@@ -54,7 +54,11 @@ export default function CategoriesManagementPage() {
   }, [profile, authLoading, router]);
 
   useEffect(() => {
-    const q = query(collection(db, 'categories'), orderBy('createdAt', 'desc'));
+    let q = query(collection(db, 'categories'), orderBy('createdAt', 'desc'));
+    if (profile?.role !== 'super_admin' && profile?.instituteId) {
+      q = query(collection(db, 'categories'), where('instituteId', '==', profile.instituteId), orderBy('createdAt', 'desc'));
+    }
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
@@ -63,7 +67,7 @@ export default function CategoriesManagementPage() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [profile]);
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +78,7 @@ export default function CategoriesManagementPage() {
       await addDoc(collection(db, 'categories'), {
         name: newName.trim(),
         description: newDesc.trim(),
+        instituteId: profile?.instituteId || 'GLOBAL',
         createdAt: serverTimestamp()
       });
       setNewName('');

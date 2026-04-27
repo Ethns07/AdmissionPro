@@ -61,7 +61,11 @@ export default function DashboardPage() {
     if (profile.role === 'student') {
       q = query(appsRef, where('studentUid', '==', user.uid), orderBy('createdAt', 'desc'));
     } else if (['admin', 'super_admin', 'admission_officer'].includes(profile.role)) {
-      q = query(appsRef, orderBy('createdAt', 'desc'), limit(10));
+      if (profile.role !== 'super_admin' && profile.instituteId) {
+        q = query(appsRef, where('instituteId', '==', profile.instituteId), orderBy('createdAt', 'desc'), limit(10));
+      } else {
+        q = query(appsRef, orderBy('createdAt', 'desc'), limit(10));
+      }
     } else {
       return;
     }

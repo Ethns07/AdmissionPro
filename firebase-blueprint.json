@@ -9,12 +9,26 @@
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["super_admin", "admin", "admission_officer", "student", "parent", "guest"] },
         "displayName": { "type": "string" },
+        "instituteId": { "type": "string", "description": "ID of the institute this user belongs to" },
         "assignedPrograms": { "type": "array", "description": "List of program IDs assigned to an admission officer" },
         "theme": { "type": "string", "enum": ["light", "dark"] },
         "isApproved": { "type": "boolean", "description": "Whether the institutional member has been approved by a super admin" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "email", "role"]
+    },
+    "Institute": {
+      "title": "Institute",
+      "description": "Educational institution profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "adminId": { "type": "string", "description": "UID of the primary admin for this institute" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "adminId"]
     },
     "Category": {
       "title": "Program Category",
@@ -24,6 +38,7 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "description": { "type": "string" },
+        "instituteId": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name"]
@@ -37,6 +52,7 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "category": { "type": "string", "description": "Program category" },
+        "instituteId": { "type": "string" },
         "imageUrl": { "type": "string" },
         "brochureUrl": { "type": "string" },
         "feeStructure": { "type": "object" },
@@ -46,7 +62,7 @@
         "deadline": { "type": "string", "format": "date-time", "description": "Program-specific application deadline" },
         "isActive": { "type": "boolean" }
       },
-      "required": ["name", "isActive", "duration"]
+      "required": ["name", "isActive", "duration", "instituteId"]
     },
     "Application": {
       "title": "Application",
@@ -59,6 +75,7 @@
         "studentEmail": { "type": "string", "format": "email" },
         "programId": { "type": "string" },
         "programName": { "type": "string" },
+        "instituteId": { "type": "string" },
         "status": { "type": "string", "enum": ["pending", "eligible", "not_eligible", "waitlist", "offer_extended", "enrolled"] },
         "formData": { "type": "object" },
         "documents": { "type": "array" },
@@ -69,7 +86,7 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["programId", "status"]
+      "required": ["programId", "status", "instituteId"]
     },
     "Payment": {
       "title": "Payment",
@@ -91,6 +108,10 @@
     "/users/{uid}": {
       "schema": "User",
       "description": "User profiles"
+    },
+    "/institutes/{instituteId}": {
+      "schema": "Institute",
+      "description": "Educational institutions"
     },
     "/programs/{programId}": {
       "schema": "Program",

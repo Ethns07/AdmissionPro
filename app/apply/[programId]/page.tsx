@@ -22,6 +22,7 @@ import {
   Database
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { sendNotificationEmail, EMAIL_TEMPLATES } from '@/lib/notifications';
 
 export default function ApplyPage() {
   const { programId } = useParams();
@@ -105,6 +106,7 @@ export default function ApplyPage() {
           studentEmail: formData.email,
           programId: program.id,
           programName: program.name,
+          instituteId: program.instituteId || 'GLOBAL',
           sessionDeadline: program.deadline,
           status: 'pending', // Initially pending for officer review
           formData: {
@@ -125,6 +127,14 @@ export default function ApplyPage() {
         };
 
         await addDoc(collection(db, 'applications'), applicationData);
+
+        // Send confirmation email
+        if (formData.email) {
+          const template = EMAIL_TEMPLATES.APPLICATION_RECEIVED(formData.fullName || 'Student', program.name);
+          // Fire and forget email sending to not block UI success
+          sendNotificationEmail(formData.email, template.subject, template.html);
+        }
+
         setStep(3); // Success step
       }
     } catch (error) {

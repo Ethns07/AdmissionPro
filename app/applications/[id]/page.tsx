@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { jsPDF } from 'jspdf';
+import { sendNotificationEmail, EMAIL_TEMPLATES } from '@/lib/notifications';
+import { collection, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 
 export default function ApplicationDetailsPage() {
   const { id } = useParams();
@@ -148,6 +150,52 @@ export default function ApplicationDetailsPage() {
     doc.save(`Offer_Letter_${application.studentName.replace(/\s+/g, '_')}.pdf`);
   };
 
+  const handlePayment = async () => {
+    if (!application || !user) return;
+    
+    // Simulate payment process
+    const amount = application.program?.feeStructure?.applicationFee || 100;
+    const receiptNumber = `PAY-${Math.floor(Math.random() * 1000000)}`;
+    
+    try {
+      // 1. Create Payment Record
+      await addDoc(collection(db, 'payments'), {
+        applicationId: application.id,
+        studentUid: user.uid,
+        studentEmail: application.studentEmail,
+        studentName: application.studentName,
+        programName: application.programName,
+        amount: amount,
+        method: 'online',
+        receiptNumber: receiptNumber,
+        date: serverTimestamp(),
+        status: 'completed'
+      });
+      
+      // 2. Update Application payment status
+      await updateDoc(doc(db, 'applications', application.id), {
+        paymentStatus: 'paid',
+        paymentDetails: {
+          method: 'online',
+          amount: amount,
+          receiptNumber: receiptNumber,
+          date: new Date().toISOString()
+        },
+        updatedAt: serverTimestamp()
+      });
+      
+      // 3. Send email
+      if (application.studentEmail) {
+        const template = EMAIL_TEMPLATES.PAYMENT_CONFIRMED(application.studentName, application.programName, amount);
+        sendNotificationEmail(application.studentEmail, template.subject, template.html);
+      }
+      
+      alert('Payment successful! Your application has been updated.');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'payments');
+    }
+  };
+
   if (!isOwner && !isStaff) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-white dark:bg-slate-950">
@@ -192,7 +240,10 @@ export default function ApplicationDetailsPage() {
               </button>
             )}
             {application.paymentStatus === 'pending' && isOwner && (
-              <button className="px-6 py-3 bg-green-600 dark:bg-emerald-600 text-white rounded-xl font-bold hover:bg-green-700 dark:hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-green-100 dark:shadow-emerald-900/20">
+              <button 
+                onClick={handlePayment}
+                className="px-6 py-3 bg-green-600 dark:bg-emerald-600 text-white rounded-xl font-bold hover:bg-green-700 dark:hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-green-100 dark:shadow-emerald-900/20"
+              >
                 <CreditCard className="w-5 h-5" />
                 Pay Admission Fee
               </button>

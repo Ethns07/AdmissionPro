@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
+import { sendNotificationEmail, EMAIL_TEMPLATES } from '@/lib/notifications';
 
 export default function OfflineAdmissionPage() {
   const { profile, loading: authLoading } = useFirebase();
@@ -65,7 +66,12 @@ export default function OfflineAdmissionPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const progSnap = await getDocs(query(collection(db, 'programs'), where('isActive', '==', true)));
+        let qRef = query(collection(db, 'programs'), where('isActive', '==', true));
+        if (profile?.role !== 'super_admin' && profile?.instituteId) {
+          qRef = query(collection(db, 'programs'), where('isActive', '==', true), where('instituteId', '==', profile.instituteId));
+        }
+        
+        const progSnap = await getDocs(qRef);
         const progs = progSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setPrograms(progs);
         if (progs.length > 0) setFormData(prev => ({ ...prev, programId: progs[0].id }));
@@ -75,8 +81,8 @@ export default function OfflineAdmissionPage() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, []);
+    if (profile) fetchData();
+  }, [profile]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -95,6 +101,7 @@ export default function OfflineAdmissionPage() {
         studentEmail: formData.studentEmail,
         programId: formData.programId,
         programName: selectedProgram?.name || '',
+        instituteId: profile?.instituteId || 'GLOBAL',
         status: 'pending',
         isOffline: true,
         paymentStatus: 'paid',
@@ -127,9 +134,23 @@ export default function OfflineAdmissionPage() {
         amount: parseFloat(formData.paymentAmount),
         method: formData.paymentMethod,
         receiptNumber: formData.receiptNumber,
+        studentEmail: formData.studentEmail,
+        studentName: formData.studentName,
+        programName: selectedProgram?.name || '',
         date: serverTimestamp(),
         status: 'completed'
       });
+
+      // 3. Send emails
+      if (formData.studentEmail) {
+        // Send Application Confirmation
+        const appTemplate = EMAIL_TEMPLATES.APPLICATION_RECEIVED(formData.studentName, selectedProgram?.name || '');
+        sendNotificationEmail(formData.studentEmail, appTemplate.subject, appTemplate.html);
+
+        // Send Payment Confirmation (since it's marked as paid immediately)
+        const payTemplate = EMAIL_TEMPLATES.PAYMENT_CONFIRMED(formData.studentName, selectedProgram?.name || '', parseFloat(formData.paymentAmount));
+        sendNotificationEmail(formData.studentEmail, payTemplate.subject, payTemplate.html);
+      }
 
       setSuccess(true);
     } catch (error) {

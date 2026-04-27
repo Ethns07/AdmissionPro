@@ -14,7 +14,8 @@ import {
   collection,
   query, 
   orderBy,
-  Timestamp
+  Timestamp,
+  where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { handleFirestoreError, OperationType } from '@/lib/firestore-utils';
@@ -69,7 +70,7 @@ export default function EditProgramPage() {
   const [eligibilityRules, setEligibilityRules] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!authLoading && (!profile || profile.role !== 'super_admin')) {
+    if (!authLoading && (!profile || !['admin', 'super_admin'].includes(profile.role))) {
       router.push('/dashboard');
     }
   }, [profile, authLoading, router]);
@@ -78,7 +79,11 @@ export default function EditProgramPage() {
     const fetchData = async () => {
       try {
         // Fetch categories
-        const catSnap = await getDocs(query(collection(db, 'categories'), orderBy('name', 'asc')));
+        let catQ = query(collection(db, 'categories'), orderBy('name', 'asc'));
+        if (profile?.role !== 'super_admin' && profile?.instituteId) {
+          catQ = query(collection(db, 'categories'), where('instituteId', '==', profile.instituteId), orderBy('name', 'asc'));
+        }
+        const catSnap = await getDocs(catQ);
         const cats = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as any[];
         setCategories(cats);
 
@@ -114,8 +119,8 @@ export default function EditProgramPage() {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [id, router]);
+    if (profile) fetchData();
+  }, [id, router, profile]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;

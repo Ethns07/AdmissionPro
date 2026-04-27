@@ -32,6 +32,7 @@ import {
   PieChart as PieChartIcon
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { sendNotificationEmail, EMAIL_TEMPLATES } from '@/lib/notifications';
 import { 
   BarChart, 
   Bar, 
@@ -74,10 +75,21 @@ export default function FinanceManagementPage() {
 
   const handleStatusUpdate = async (paymentId: string, newStatus: string) => {
     try {
+      const payment = payments.find(p => p.id === paymentId);
+      
       await updateDoc(doc(db, 'payments', paymentId), {
         status: newStatus,
         updatedAt: serverTimestamp()
       });
+
+      // If payment completed, send confirmation email
+      if (newStatus === 'completed' && payment && payment.studentEmail) {
+        const studentName = payment.studentName || 'Student';
+        const programName = payment.programName || 'Selected Program';
+        const template = EMAIL_TEMPLATES.PAYMENT_CONFIRMED(studentName, programName, payment.amount);
+        
+        await sendNotificationEmail(payment.studentEmail, template.subject, template.html);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `payments/${paymentId}`);
     }

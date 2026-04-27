@@ -319,7 +319,78 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Stats Section - Modern Counter Style */}
+        {/* Institutional Section */}
+        <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] p-12 lg:p-20 overflow-hidden relative shadow-2xl shadow-slate-200/50 dark:shadow-slate-950/50">
+              <div className="absolute top-0 right-0 w-1/2 h-full bg-amber-500/5 dark:bg-amber-500/10 rounded-full blur-[100px] translate-x-1/3" />
+              
+              <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
+                <div>
+                  <motion.span 
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-6 border border-amber-100 dark:border-amber-500/20"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 mr-2" />
+                    Institutional Enterprise
+                  </motion.span>
+                  <h2 className="text-4xl lg:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">
+                    Management Portal for <br />
+                    <span className="text-amber-600 dark:text-amber-500">Staff & Administrators</span>
+                  </h2>
+                  <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
+                    Designed for heavy-duty registrar operations. Securely manage program catalogs, evaluate student credentials with automated scoring, and oversee the entire financial pipeline from one unified command center.
+                  </p>
+                  
+                  <div className="space-y-4 mb-10">
+                    {[
+                      "Role-based access control (RBAC)",
+                      "Bulk application processing",
+                      "Financial reconciliation & auditing",
+                      "Automated merit list generation"
+                    ].map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Link
+                    href="/login?type=institution"
+                    className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-amber-600 rounded-2xl hover:bg-amber-700 transition-all shadow-lg shadow-amber-900/20 group"
+                  >
+                    Enter Institute Portal
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
+                  </Link>
+                </div>
+                
+                <div className="relative group">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-amber-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+                  <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-inner">
+                    <Image 
+                      src="https://picsum.photos/seed/dashboard-staff/1200/800" 
+                      alt="Staff Dashboard" 
+                      fill 
+                      className="object-cover opacity-80"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
+                    <div className="absolute bottom-8 left-8">
+                      <p className="text-white font-bold text-lg">Centralized Intake Control</p>
+                      <p className="text-white/60 text-xs uppercase tracking-widest font-bold">Registry OS v2.4</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
         <section className="py-24 bg-slate-950 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-indigo-600/5 backdrop-blur-3xl" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

@@ -13,6 +13,7 @@ import {
   serverTimestamp,
   getDocs,
   where,
+  orderBy,
   addDoc,
   deleteDoc
 } from 'firebase/firestore';
@@ -43,9 +44,17 @@ export default function StaffManagementPage() {
   
   const [users, setUsers] = useState<any[]>([]);
   const [programs, setPrograms] = useState<any[]>([]);
+  const [institutes, setInstitutes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAssignModal, setShowAssignModal] = useState<string | null>(null);
+  const [showInstituteModal, setShowInstituteModal] = useState(false);
+  const [batching, setBatching] = useState(false);
+  const [newInstitute, setNewInstitute] = useState({
+    name: '',
+    description: '',
+    adminId: ''
+  });
   const [confirmAction, setConfirmAction] = useState<{
     type: 'role' | 'program';
     userId: string;
@@ -76,7 +85,13 @@ export default function StaffManagementPage() {
   }, [profile, authLoading, router]);
 
   useEffect(() => {
-    const q = query(collection(db, 'users'));
+    if (!profile) return;
+
+    let q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    if (profile.role !== 'super_admin' && profile.instituteId) {
+      q = query(collection(db, 'users'), where('instituteId', '==', profile.instituteId), orderBy('createdAt', 'desc'));
+    }
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setUsers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
@@ -84,16 +99,26 @@ export default function StaffManagementPage() {
       handleFirestoreError(error, OperationType.LIST, 'users');
     });
 
-    const progQ = query(collection(db, 'programs'), where('isActive', '==', true));
+    let progQ = query(collection(db, 'programs'), where('isActive', '==', true));
+    if (profile.role !== 'super_admin' && profile.instituteId) {
+      progQ = query(collection(db, 'programs'), where('isActive', '==', true), where('instituteId', '==', profile.instituteId));
+    }
+    
     const unsubscribeProgs = onSnapshot(progQ, (snapshot) => {
       setPrograms(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    const instQ = query(collection(db, 'institutes'));
+    const unsubscribeInsts = onSnapshot(instQ, (snapshot) => {
+      setInstitutes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
     return () => {
       unsubscribe();
       unsubscribeProgs();
+      unsubscribeInsts();
     };
-  }, []);
+  }, [profile]);
 
   const handleToggleApproval = async (user: any) => {
     if (user.role === 'super_admin' && profile?.role !== 'super_admin') return;
@@ -194,6 +219,37 @@ export default function StaffManagementPage() {
       userName: user.displayName || user.email,
       targetName: programName
     });
+  };
+
+  const handleAddInstitute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newInstitute.name || !newInstitute.adminId) return;
+
+    setBatching(true);
+    try {
+      // 1. Create the institute
+      const instRef = await addDoc(collection(db, 'institutes'), {
+        name: newInstitute.name,
+        description: newInstitute.description,
+        adminId: newInstitute.adminId,
+        createdAt: serverTimestamp()
+      });
+
+      // 2. Update the assigned admin user
+      await updateDoc(doc(db, 'users', newInstitute.adminId), {
+        instituteId: instRef.id,
+        role: 'admin',
+        isApproved: true,
+        updatedAt: serverTimestamp()
+      });
+
+      setShowInstituteModal(false);
+      setNewInstitute({ name: '', description: '', adminId: '' });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.CREATE, 'institutes');
+    } finally {
+      setBatching(false);
+    }
   };
 
   const handleAddStaff = async (e: React.FormEvent) => {
@@ -301,6 +357,15 @@ export default function StaffManagementPage() {
             <p className="text-slate-500 dark:text-slate-400 mt-1 text-lg">Assign roles and manage program assignments for admission officers.</p>
           </div>
           <div className="flex items-center gap-3">
+            {profile?.role === 'super_admin' && (
+              <button
+                onClick={() => setShowInstituteModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-600 transition-all shadow-lg shadow-amber-100 dark:shadow-amber-900/20"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                New Institute
+              </button>
+            )}
             <button
               onClick={() => setShowAddModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 dark:shadow-indigo-900/20"
@@ -796,6 +861,92 @@ export default function StaffManagementPage() {
           </div>
         )}
       </AnimatePresence>
+      {/* New Institute Modal */}
+      <AnimatePresence>
+        {showInstituteModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowInstituteModal(false)}
+              className="absolute inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl border border-slate-100 dark:border-slate-800 w-full max-w-lg overflow-hidden"
+            >
+              <div className="p-8 border-b border-slate-50 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">Create New Institute</h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Register a new educational institution and assign an admin.</p>
+              </div>
+              <form onSubmit={handleAddInstitute} className="p-8 space-y-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Institute Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={newInstitute.name}
+                    onChange={(e) => setNewInstitute(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
+                    placeholder="e.g. Oxford University"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Description</label>
+                  <textarea
+                    value={newInstitute.description}
+                    onChange={(e) => setNewInstitute(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white min-h-[100px]"
+                    placeholder="Brief information about the institute..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Assign Institute Admin</label>
+                  <select
+                    required
+                    value={newInstitute.adminId}
+                    onChange={(e) => setNewInstitute(prev => ({ ...prev, adminId: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 outline-none transition-all bg-white dark:bg-slate-900 dark:text-white"
+                  >
+                    <option value="">Select a user to promote...</option>
+                    {users
+                      .filter(u => u.role !== 'super_admin') // Don't allow assigning super admins to sub-institutes
+                      .map(u => (
+                        <option key={u.id} value={u.id}>
+                          {u.displayName || u.email} ({u.role})
+                        </option>
+                      ))}
+                  </select>
+                  <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">
+                    Note: The selected user will be promoted to Admin and restricted to this institute.
+                  </p>
+                </div>
+                
+                <div className="pt-4 flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowInstituteModal(false)}
+                    className="flex-1 px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={batching}
+                    className="flex-1 px-6 py-3 bg-amber-500 text-white rounded-2xl font-bold hover:bg-amber-600 transition-all shadow-lg shadow-amber-100 dark:shadow-amber-900/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {batching ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Institute'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Confirmation Modal */}
       <AnimatePresence>
         {confirmAction && (

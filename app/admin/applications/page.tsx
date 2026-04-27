@@ -40,6 +40,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import Link from 'next/link';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { sendNotificationEmail, EMAIL_TEMPLATES } from '@/lib/notifications';
 
 export default function ApplicationsManagementPage() {
   const { profile, loading: authLoading } = useFirebase();
@@ -65,7 +66,11 @@ export default function ApplicationsManagementPage() {
   }, [profile, authLoading, router]);
 
   useEffect(() => {
-    const q = query(collection(db, 'applications'), orderBy('createdAt', 'desc'));
+    let q = query(collection(db, 'applications'), orderBy('createdAt', 'desc'));
+    if (profile?.role !== 'super_admin' && profile?.instituteId) {
+      q = query(collection(db, 'applications'), where('instituteId', '==', profile.instituteId), orderBy('createdAt', 'desc'));
+    }
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setApplications(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       setLoading(false);
@@ -74,14 +79,25 @@ export default function ApplicationsManagementPage() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [profile]);
 
   const handleStatusUpdate = async (appId: string, newStatus: string) => {
     try {
+      const app = applications.find(a => a.id === appId);
+      
       await updateDoc(doc(db, 'applications', appId), {
         status: newStatus,
         updatedAt: serverTimestamp()
       });
+
+      // Send email notification
+      if (app && app.studentEmail) {
+        const studentName = app.studentName || 'Student';
+        const programName = app.programName || 'Selected Program';
+        const template = EMAIL_TEMPLATES.STATUS_UPDATE(studentName, programName, newStatus);
+        
+        await sendNotificationEmail(app.studentEmail, template.subject, template.html);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `applications/${appId}`);
     }
