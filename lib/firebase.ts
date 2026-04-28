@@ -23,7 +23,6 @@ async function testConnection() {
   try {
     const testDoc = doc(db, 'test', 'connection');
     await getDocFromServer(testDoc);
-    console.log('Firebase connection established successfully.');
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes('the client is offline') || error.message.includes('unavailable')) {

@@ -110,16 +110,56 @@ function LoginContent() {
           await updateProfile(user, { displayName: fullName });
         }
       } else {
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        user = result.user;
+        try {
+          const result = await signInWithEmailAndPassword(auth, email, password);
+          user = result.user;
+        } catch (authError: any) {
+          // If user doesn't exist in Auth, check if they are a pre-registered staff in Firestore
+          if (authError.code === 'auth/user-not-found' || authError.code === 'auth/invalid-credential') {
+            // Check if they are a pre-registered staff in Firestore using their email as doc ID
+            const staffEmail = email.toLowerCase().trim();
+            const staffDocRef = doc(db, 'users', staffEmail);
+            
+            let staffDoc;
+            try {
+              staffDoc = await getDoc(staffDocRef);
+            } catch (permError) {
+              console.error("Permission error checking staff doc:", permError);
+              throw authError; // Rethrow original auth error if we can't even check staff status
+            }
+            
+            if (staffDoc.exists()) {
+              const staffData = staffDoc.data();
+              if (staffData.password === password) {
+                // Valid pre-registered staff! Create their auth account automatically
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                user = result.user;
+                if (staffData.displayName) {
+                  await updateProfile(user, { displayName: staffData.displayName });
+                }
+              } else {
+                throw new Error("Invalid password for pre-registered staff account.");
+              }
+            } else {
+              // If it's auth/invalid-credential, it might mean email/password is disabled in Firebase console
+              if (authError.code === 'auth/invalid-credential') {
+                throw new Error("Invalid credentials. If you are sure your password is correct, please ensure 'Email/Password' authentication is enabled in the Firebase Console.");
+              }
+              throw authError;
+            }
+          } else {
+            throw authError;
+          }
+        }
       }
       await finalizeLogin(user, fullName);
     } catch (err: any) {
       console.error("Email auth error:", err);
-      let msg = "Authentication failed.";
+      let msg = err.message || "Authentication failed.";
       if (err.code === 'auth/user-not-found') msg = "No account found with this email.";
       if (err.code === 'auth/wrong-password') msg = "Incorrect password.";
       if (err.code === 'auth/email-already-in-use') msg = "An account already exists with this email.";
+      if (err.code === 'auth/invalid-credential') msg = "Invalid credentials. Please verify your email and password, and ensure Email/Password auth is enabled in Firebase Console.";
       setError(msg);
     } finally {
       setLoading(false);

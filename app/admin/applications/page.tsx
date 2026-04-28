@@ -49,6 +49,7 @@ export default function ApplicationsManagementPage() {
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [view, setView] = useState<'list' | 'merit'>('list');
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -80,6 +81,14 @@ export default function ApplicationsManagementPage() {
 
     return () => unsubscribe();
   }, [profile]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   const handleStatusUpdate = async (appId: string, newStatus: string) => {
     try {
@@ -117,9 +126,9 @@ export default function ApplicationsManagementPage() {
 
   const filteredApps = applications.filter(app => {
     const matchesSearch = 
-      app.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      app.studentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.id.toLowerCase().includes(searchTerm.toLowerCase());
+      app.studentName?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
+      app.studentEmail?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+      app.id.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
     
@@ -235,7 +244,7 @@ export default function ApplicationsManagementPage() {
   const isAdmin = ['admin', 'super_admin'].includes(profile?.role || '');
   const isAdmissionOfficer = profile?.role === 'admission_officer' || isAdmin;
 
-  if (loading || authLoading) {
+  if (authLoading) {
     return <LoadingSpinner />;
   }
 
@@ -385,91 +394,95 @@ export default function ApplicationsManagementPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredApps.map((app) => (
-                      <tr key={app.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                        <td className="px-4 sm:px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-base">
-                              {app.studentName?.[0] || 'U'}
-                            </div>
-                            <div className="max-w-[120px] sm:max-w-none">
-                              <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{app.studentName}</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{app.studentEmail}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 hidden md:table-cell cursor-default">
-                          <p className="text-sm text-slate-700 dark:text-slate-300 truncate max-w-[150px]">{app.programName}</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500">{app.sessionName}</p>
-                        </td>
-                        <td className="px-6 py-4 hidden sm:table-cell">
-                          <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">
-                            {app.meritScore?.toFixed(2) || 'N/A'}
-                          </span>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4">
-                          <div className="max-w-[120px] sm:max-w-none">
-                            {isAdmissionOfficer ? (
-                              <StatusSelect app={app} handleStatusUpdate={handleStatusUpdate} />
-                            ) : (
-                              <StatusBadge status={app.status} />
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 hidden lg:table-cell">
-                          <div className="flex flex-col gap-1">
-                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded w-fit ${
-                              app.isOffline ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400'
-                            }`}>
-                              {app.isOffline ? 'Offline' : 'Online'}
-                            </span>
-                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded w-fit ${
-                              app.paymentStatus === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                            }`}>
-                              {app.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-6 py-4 text-right">
-                          <div className="flex justify-end gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                            {isAdmissionOfficer && (
-                              <div className="hidden sm:flex gap-1">
-                                <button 
-                                  onClick={() => handleStatusUpdate(app.id, 'eligible')}
-                                  className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
-                                  title="Mark Eligible"
-                                >
-                                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
-                                <button 
-                                  onClick={() => handleStatusUpdate(app.id, 'not_eligible')}
-                                  className="p-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
-                                  title="Reject"
-                                >
-                                  <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                                </button>
+                    {loading ? (
+                      <TableSkeleton rows={5} />
+                    ) : (
+                      filteredApps.map((app) => (
+                        <tr key={app.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                          <td className="px-4 sm:px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold text-xs sm:text-base">
+                                {app.studentName?.[0] || 'U'}
                               </div>
-                            )}
-                            <Link 
-                              href={`/applications/${app.id}`}
-                              className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                              title="View Details"
-                            >
-                              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                            </Link>
-                            {isAdmin && (
-                              <button 
-                                onClick={() => setDeleteId(app.id)}
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
-                                title="Delete Application"
+                              <div className="max-w-[120px] sm:max-w-none">
+                                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{app.studentName}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{app.studentEmail}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 hidden md:table-cell cursor-default">
+                            <p className="text-sm text-slate-700 dark:text-slate-300 truncate max-w-[150px]">{app.programName}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">{app.sessionName}</p>
+                          </td>
+                          <td className="px-6 py-4 hidden sm:table-cell">
+                            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">
+                              {app.meritScore?.toFixed(2) || 'N/A'}
+                            </span>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4">
+                            <div className="max-w-[120px] sm:max-w-none">
+                              {isAdmissionOfficer ? (
+                                <StatusSelect app={app} handleStatusUpdate={handleStatusUpdate} />
+                              ) : (
+                                <StatusBadge status={app.status} />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 hidden lg:table-cell">
+                            <div className="flex flex-col gap-1">
+                              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded w-fit ${
+                                app.isOffline ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400'
+                              }`}>
+                                {app.isOffline ? 'Offline' : 'Online'}
+                              </span>
+                              <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded w-fit ${
+                                app.paymentStatus === 'paid' ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                              }`}>
+                                {app.paymentStatus === 'paid' ? 'Paid' : 'Unpaid'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 sm:px-6 py-4 text-right">
+                            <div className="flex justify-end gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                              {isAdmissionOfficer && (
+                                <div className="hidden sm:flex gap-1">
+                                  <button 
+                                    onClick={() => handleStatusUpdate(app.id, 'eligible')}
+                                    className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-colors"
+                                    title="Mark Eligible"
+                                  >
+                                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  </button>
+                                  <button 
+                                    onClick={() => handleStatusUpdate(app.id, 'not_eligible')}
+                                    className="p-1.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
+                                    title="Reject"
+                                  >
+                                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  </button>
+                                </div>
+                              )}
+                              <Link 
+                                href={`/applications/${app.id}`}
+                                className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                title="View Details"
                               >
-                                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                                <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                              </Link>
+                              {isAdmin && (
+                                <button 
+                                  onClick={() => setDeleteId(app.id)}
+                                  className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
+                                  title="Delete Application"
+                                >
+                                  <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -502,63 +515,67 @@ export default function ApplicationsManagementPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {meritList.map((app, index) => (
-                    <tr key={app.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                      <td className="px-4 sm:px-6 py-4">
-                        <span className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
-                          index < 3 ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}>
-                          {index + 1}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[150px]">{app.studentName}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{app.studentEmail}</p>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 hidden md:table-cell truncate max-w-[200px]">{app.programName}</td>
-                      <td className="px-4 sm:px-6 py-4">
-                        <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">
-                          {app.meritScore?.toFixed(2)}
-                        </span>
-                      </td>
-                      <td className="px-4 sm:px-6 py-4 hidden sm:table-cell">
-                        {isAdmissionOfficer ? (
-                          <StatusSelect app={app} handleStatusUpdate={handleStatusUpdate} />
-                        ) : (
-                          <StatusBadge status={app.status} />
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <div className="flex justify-end gap-1">
-                          {isAdmissionOfficer && (
-                            <button 
-                              onClick={() => handleStatusUpdate(app.id, 'offer_extended')}
-                              className="px-2 py-1.5 bg-slate-900 dark:bg-indigo-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-800 dark:hover:bg-indigo-700 transition-colors whitespace-nowrap"
-                            >
-                              <span className="hidden sm:inline">Extend Offer</span>
-                              <Plus className="w-3.5 h-3.5 sm:hidden" />
-                            </button>
+                  {loading ? (
+                    <MeritSkeleton rows={5} />
+                  ) : (
+                    meritList.map((app, index) => (
+                      <tr key={app.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-4 sm:px-6 py-4">
+                          <span className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
+                            index < 3 ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                          }`}>
+                            {index + 1}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[150px]">{app.studentName}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-[150px]">{app.studentEmail}</p>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-700 dark:text-slate-300 hidden md:table-cell truncate max-w-[200px]">{app.programName}</td>
+                        <td className="px-4 sm:px-6 py-4">
+                          <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">
+                            {app.meritScore?.toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-4 hidden sm:table-cell">
+                          {isAdmissionOfficer ? (
+                            <StatusSelect app={app} handleStatusUpdate={handleStatusUpdate} />
+                          ) : (
+                            <StatusBadge status={app.status} />
                           )}
-                          <Link 
-                            href={`/applications/${app.id}`}
-                            className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                            title="View Details"
-                          >
-                            <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </Link>
-                          {isAdmin && (
-                            <button 
-                              onClick={() => setDeleteId(app.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
-                              title="Delete Application"
+                        </td>
+                        <td className="px-4 py-4 text-right">
+                          <div className="flex justify-end gap-1">
+                            {isAdmissionOfficer && (
+                              <button 
+                                onClick={() => handleStatusUpdate(app.id, 'offer_extended')}
+                                className="px-2 py-1.5 bg-slate-900 dark:bg-indigo-600 text-white text-[10px] font-bold rounded-lg hover:bg-slate-800 dark:hover:bg-indigo-700 transition-colors whitespace-nowrap"
+                              >
+                                <span className="hidden sm:inline">Extend Offer</span>
+                                <Plus className="w-3.5 h-3.5 sm:hidden" />
+                              </button>
+                            )}
+                            <Link 
+                              href={`/applications/${app.id}`}
+                              className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                              title="View Details"
                             >
-                              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </Link>
+                            {isAdmin && (
+                              <button 
+                                onClick={() => setDeleteId(app.id)}
+                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"
+                                title="Delete Application"
+                              >
+                                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -648,3 +665,78 @@ const StatusBadge = ({ status }: { status: string }) => {
     </span>
   );
 };
+
+const TableSkeleton = ({ rows = 5 }: { rows?: number }) => (
+  <>
+    {Array.from({ length: rows }).map((_, i) => (
+      <tr key={i} className="animate-pulse">
+        <td className="px-4 sm:px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-200 dark:bg-slate-800" />
+            <div className="space-y-2">
+              <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
+              <div className="h-3 w-32 bg-slate-100 dark:bg-slate-700 rounded" />
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-4 hidden md:table-cell">
+          <div className="space-y-2">
+            <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded" />
+            <div className="h-3 w-16 bg-slate-100 dark:bg-slate-700 rounded" />
+          </div>
+        </td>
+        <td className="px-6 py-4 hidden sm:table-cell">
+          <div className="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded" />
+        </td>
+        <td className="px-4 sm:px-6 py-4">
+          <div className="h-6 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" />
+        </td>
+        <td className="px-6 py-4 hidden lg:table-cell">
+          <div className="space-y-1">
+            <div className="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded" />
+            <div className="h-4 w-12 bg-slate-100 dark:bg-slate-700 rounded" />
+          </div>
+        </td>
+        <td className="px-4 sm:px-6 py-4">
+          <div className="flex justify-end gap-2">
+            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          </div>
+        </td>
+      </tr>
+    ))}
+  </>
+);
+
+const MeritSkeleton = ({ rows = 5 }: { rows?: number }) => (
+  <>
+    {Array.from({ length: rows }).map((_, i) => (
+      <tr key={i} className="animate-pulse">
+        <td className="px-4 sm:px-6 py-4">
+          <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800" />
+        </td>
+        <td className="px-4 py-4">
+          <div className="space-y-2">
+            <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
+            <div className="h-3 w-32 bg-slate-100 dark:bg-slate-700 rounded" />
+          </div>
+        </td>
+        <td className="px-6 py-4 hidden md:table-cell">
+          <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded" />
+        </td>
+        <td className="px-4 sm:px-6 py-4">
+          <div className="h-4 w-12 bg-slate-200 dark:bg-slate-800 rounded" />
+        </td>
+        <td className="px-4 sm:px-6 py-4 hidden sm:table-cell">
+          <div className="h-6 w-20 bg-slate-200 dark:bg-slate-800 rounded-full" />
+        </td>
+        <td className="px-4 py-4">
+          <div className="flex justify-end gap-2">
+            <div className="w-20 h-8 bg-slate-900/10 dark:bg-indigo-600/10 rounded-lg" />
+            <div className="w-8 h-8 bg-slate-100 dark:bg-slate-800 rounded-lg" />
+          </div>
+        </td>
+      </tr>
+    ))}
+  </>
+);

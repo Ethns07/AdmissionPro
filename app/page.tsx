@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Navbar } from '@/components/Navbar';
 import { motion } from 'motion/react';
 import { useFirebase } from '@/components/FirebaseProvider';
@@ -14,466 +13,445 @@ import {
   Clock,
   Globe,
   Award,
-  GraduationCap
+  GraduationCap,
+  Building2,
+  Users,
+  BarChart3,
+  Search,
+  Lock,
+  Database,
+  Cpu,
+  Workflow
 } from 'lucide-react';
 
 export default function LandingPage() {
   const { profile } = useFirebase();
   const isStudent = profile && profile.role === 'student';
+  
+  // Mouse tracking for subtle parallax effect
+  const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    setMousePos({
+      x: (clientX / innerWidth - 0.5) * 20,
+      y: (clientY / innerHeight - 0.5) * 20
+    });
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950 transition-colors duration-300">
+    <div 
+      className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 transition-colors duration-300"
+      onMouseMove={handleMouseMove}
+    >
       <Navbar />
       
       <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="relative min-h-[90vh] flex items-center pt-24 pb-16 lg:pt-32 lg:pb-32 overflow-hidden">
-          {/* Animated Background Elements */}
+        {/* Hero Section - Elite Institutional Design */}
+        <section className="relative min-h-[90vh] flex items-center pt-8 pb-16 lg:pt-12 lg:pb-32 overflow-hidden bg-slate-50 dark:bg-slate-950">
+          {/* Advanced Background Architecture */}
           <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-[120px] animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[120px] animate-pulse [animation-delay:2s]" />
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-40 mix-blend-overlay pointer-events-none" />
+            {/* Dynamic Mesh Gradients with Mouse Parallax */}
+            <motion.div 
+              animate={{ 
+                x: mousePos.x * -1.5,
+                y: mousePos.y * -1.5,
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, 0],
+                opacity: [0.08, 0.12, 0.08]
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] bg-indigo-500 rounded-full blur-[140px]" 
+            />
+            <motion.div 
+              animate={{ 
+                x: mousePos.x * 1.5,
+                y: mousePos.y * 1.5,
+                scale: [1, 1.2, 1],
+                rotate: [0, -5, 0],
+                opacity: [0.05, 0.1, 0.05]
+              }}
+              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+              className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-blue-500 rounded-full blur-[140px]" 
+            />
             
-            {/* Grid Pattern */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+            {/* Fine Technical Grid */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_50%,#000_80%,transparent_100%)]" />
+            
+            {/* Floating Geometric Accents with Parallax */}
+            <motion.div 
+              animate={{ 
+                x: mousePos.x * 0.5,
+                y: [0, 15, 0], 
+                opacity: [0.3, 0.6, 0.3] 
+              }}
+              transition={{ 
+                y: { duration: 6, repeat: Infinity, ease: "easeInOut" },
+                opacity: { duration: 6, repeat: Infinity, ease: "easeInOut" }
+              }}
+              className="absolute top-1/4 left-1/4 w-12 h-12 border border-indigo-500/20 rounded-lg rotate-12"
+            />
+            <motion.div 
+              animate={{ 
+                x: mousePos.x * -0.5,
+                y: [0, -15, 0], 
+                opacity: [0.2, 0.5, 0.2] 
+              }}
+              transition={{ 
+                y: { duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 },
+                opacity: { duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }
+              }}
+              className="absolute bottom-1/4 right-1/4 w-16 h-16 border-2 border-blue-500/10 rounded-full"
+            />
           </div>
           
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="text-left"
-              >
-                <motion.span 
-                  initial={{ opacity: 0, y: 10 }}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+            <div className="max-w-5xl mx-auto">
+              <div className="relative z-10">
+                {/* Refined Institutional Badge */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mb-8 border border-indigo-100 dark:border-indigo-500/20 shadow-sm"
+                  transition={{ duration: 0.6 }}
+                  className="inline-flex items-center gap-3 px-5 py-2 rounded-full border border-slate-200/50 dark:border-slate-800/50 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md shadow-2xl shadow-indigo-500/5 mb-6 group cursor-default"
                 >
-                  <Zap className="w-3.5 h-3.5 mr-2" />
-                  Precision Intake Infrastructure
-                </motion.span>
-                
-                <h1 className="text-6xl lg:text-8xl font-display font-bold tracking-tight text-slate-900 dark:text-white mb-8 leading-[0.95]">
-                  Intelligent <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-500 dark:from-indigo-400 dark:to-emerald-400">Academic Intake.</span>
-                </h1>
-                
-                <p className="max-w-xl text-lg lg:text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
-                  Deploy a high-performance admission engine designed for modern institutions. Automate verification, optimize merit-based selection, and scale your enrollment with industrial-grade reliability.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <Link
-                    href="/programs"
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-slate-900 dark:bg-indigo-600 rounded-2xl hover:bg-slate-800 dark:hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg dark:shadow-indigo-900/40 group active:scale-95"
-                  >
-                    Explore Catalogs
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-base font-bold text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700 transition-all active:scale-95 shadow-sm"
-                  >
-                    Student Portal
-                  </Link>
-                </div>
-                
-                {/* Micro-stats */}
-                <div className="mt-12 flex flex-wrap gap-8 items-center border-t border-slate-100 dark:border-slate-800 pt-8">
-                  <div>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">50k+</p>
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Throughput</p>
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600 dark:bg-indigo-400"></span>
                   </div>
-                  <div className="w-px h-8 bg-slate-200 dark:bg-slate-800" />
-                  <div>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">120+</p>
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Programs</p>
-                  </div>
-                  <div className="w-px h-8 bg-slate-200 dark:bg-slate-800" />
-                  <div>
-                    <div className="flex items-center gap-1.5 mb-1 text-emerald-500 dark:text-emerald-400">
-                      <GraduationCap className="w-4 h-4" />
-                      <p className="text-2xl font-bold">98%</p>
-                    </div>
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Selection Rate</p>
-                  </div>
-                </div>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, rotate: 2 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                className="relative hidden lg:block"
-              >
-                {/* Floating Mockup Card 1 */}
-                <motion.div 
-                  animate={{ y: [0, -20, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -top-12 -left-12 w-64 bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 z-20"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle2 className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase">Verification</p>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">App #4592 Verified</p>
-                    </div>
-                  </div>
-                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: "100%" }}
-                      transition={{ duration: 2, delay: 1 }}
-                      className="h-full bg-emerald-500" 
-                    />
-                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 dark:text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    Institutional Governance Protocol v2.4
+                  </span>
                 </motion.div>
-
-                {/* Main Visual Component - Using an optimized abstract background */}
-                <div className="relative rounded-[3rem] overflow-hidden border-[8px] border-white dark:border-slate-900 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] aspect-[4/5] bg-slate-100 dark:bg-slate-800">
-                  <Image 
-                    src="https://picsum.photos/seed/admission-modern/1200/1500" 
-                    alt="Admission Process"
-                    fill
-                    className="object-cover opacity-60 dark:opacity-40 grayscale"
-                    referrerPolicy="no-referrer"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600/40 via-transparent to-emerald-500/20 mix-blend-multiply" />
+                
+                {/* Hero Headline with Animated Gradient & Stagger */}
+                <div className="mb-12 overflow-visible">
+                  <motion.h1 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                    className="text-4xl md:text-6xl lg:text-7xl font-display font-black tracking-tight text-slate-950 dark:text-white leading-[1.1] md:leading-[1.05]"
+                  >
+                    <div className="flex flex-wrap justify-center overflow-visible">
+                      {["The", "Global", "Standard"].map((word, i) => (
+                        <motion.span
+                          key={i}
+                          initial={{ y: 20, opacity: 0, scale: 0.9 }}
+                          animate={{ y: 0, opacity: 1, scale: 1 }}
+                          transition={{ delay: 0.2 + i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                          className="inline-block mr-[0.2em] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-500"
+                        >
+                          {word}
+                        </motion.span>
+                      ))}
+                    </div>
+                    <motion.span 
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.7, duration: 1 }}
+                      className="inline-block mt-2 relative"
+                    >
+                      <span className="text-transparent bg-clip-text bg-gradient-to-br from-indigo-600 via-blue-600 to-indigo-800 dark:from-indigo-400 dark:via-blue-400 dark:to-blue-200 drop-shadow-sm">
+                        Academic Intake.
+                      </span>
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: "100%" }}
+                        transition={{ delay: 1.5, duration: 1.2, ease: "circOut" }}
+                        className="absolute -bottom-4 left-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent"
+                      />
+                    </motion.span>
+                  </motion.h1>
+                </div>
+                
+                {/* High-Impact Subtext */}
+                <motion.p 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9, duration: 0.8 }}
+                  className="max-w-3xl mx-auto text-base md:text-lg text-slate-600 dark:text-slate-400 mb-16 leading-relaxed font-medium tracking-tight"
+                >
+                  Sophisticated infrastructure for modern academic registrars. Automated eligibility verification, verified credential routing, and secure enrollment pipeline management at institutional scale.
+                </motion.p>
+                
+                {/* Sophisticated CTA Cluster with Glassmorphism */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.1, duration: 0.8 }}
+                  className="flex flex-col sm:flex-row items-center justify-center gap-6 relative"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      href="/programs"
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-xs font-black text-white bg-slate-950 dark:bg-indigo-600 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-all shadow-[0_15px_40px_rgba(79,70,229,0.25)] group overflow-hidden relative border border-white/10"
+                    >
+                      <span className="relative z-10 flex items-center tracking-widest uppercase">
+                        Browse Programs
+                        <ArrowRight className="ml-3 w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                      </span>
+                      <motion.div 
+                        animate={{ x: ["-100%", "200%"] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12"
+                      />
+                    </Link>
+                  </motion.div>
                   
-                  {/* Floating App Mockup Content */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
-                    <div className="w-20 h-20 bg-white/10 backdrop-blur-xl rounded-3xl flex items-center justify-center mb-6 border border-white/20">
-                      <GraduationCap className="w-10 h-10 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">Rule-Based Admission</h3>
-                    <p className="text-white/70 text-sm">Automated eligibility scoring engine</p>
-                    
-                    <div className="mt-8 space-y-3 w-full">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="h-4 bg-white/20 backdrop-blur-sm rounded-full w-full opacity-50" style={{ width: `${100 - (i * 15)}%`, margin: '0 auto' }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Floating Badge 2 */}
-                <motion.div 
-                  animate={{ y: [0, 20, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute -bottom-8 -right-8 bg-slate-900 dark:bg-white p-6 rounded-3xl shadow-2xl z-20 text-white dark:text-slate-900"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex -space-x-3">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 dark:border-white bg-slate-800 dark:bg-slate-200" />
-                      ))}
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Active Users</p>
-                      <p className="text-lg font-bold leading-tight">1.2k+ Online</p>
-                    </div>
-                  </div>
+                  <motion.div
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link
+                      href="/login"
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-xs font-black text-slate-950 dark:text-white bg-white/20 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-xl hover:bg-white/40 dark:hover:bg-slate-800 transition-all backdrop-blur-2xl shadow-lg tracking-widest uppercase"
+                    >
+                      Institution Portal
+                    </Link>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
+              </div>
             </div>
           </div>
+
+          {/* Scroll Discovery Indicator */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2, duration: 1 }}
+            className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          >
+            <span className="text-[8px] font-black uppercase tracking-[0.5em] text-slate-400 dark:text-slate-600">Discover Protocol</span>
+            <motion.div 
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-px h-12 bg-gradient-to-b from-indigo-500/50 to-transparent"
+            />
+          </motion.div>
         </section>
 
-        {/* Features Grid - Enhanced with industrial spacing and bento-inspired cards */}
-        <section className="py-24 bg-white dark:bg-slate-950 relative overflow-hidden">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none" />
-          
+        {/* Feature Ecosystem Section */}
+        <section className="py-24 relative overflow-hidden bg-white dark:bg-slate-950">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-20">
-              <div className="max-w-2xl">
-                <motion.h2 
+            <div className="text-center max-w-3xl mx-auto mb-20">
+              <h2 className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.3em] mb-4">Core Infrastructure</h2>
+              <p className="text-4xl lg:text-5xl font-display font-bold text-slate-900 dark:text-white leading-tight">
+                High-Performance Tools for Academic Operations.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: Database,
+                  title: "Unified Registrar Base",
+                  desc: "A single source of truth for student records, enrollment status, and institutional program catalogs.",
+                },
+                {
+                  icon: Cpu,
+                  title: "Automated Verification",
+                  desc: "Rule-based scoring engines that detect eligibility and compute merit rankings in real-time.",
+                },
+                {
+                  icon: Lock,
+                  title: "Role-Based Authority",
+                  desc: "Granular access control ensuring sensitive student data and financial records are strictly protected.",
+                },
+                {
+                  icon: Workflow,
+                  title: "Pipeline Automation",
+                  desc: "Move candidates from application to enrollment through custom state-machine workflows.",
+                },
+                {
+                  icon: BarChart3,
+                  title: "Strategic Analytics",
+                  desc: "Identify intake trends and optimize program capacities with live data visualization dashboards.",
+                },
+                {
+                  icon: Search,
+                  title: "Global Audit Search",
+                  desc: "Instantly locate records across the entire institutional history with powerful forensic indexing.",
+                }
+              ].map((feature, i) => (
+                <motion.div
+                  key={i}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="text-4xl lg:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6"
+                  transition={{ delay: i * 0.1 }}
+                  className="p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-900 transition-all hover:shadow-2xl hover:shadow-slate-200/50 dark:hover:shadow-none group"
                 >
-                  Engineered for <br /><span className="text-indigo-600 dark:text-indigo-400">Institutional Growth</span>
-                </motion.h2>
-                <p className="text-lg text-slate-600 dark:text-slate-400">
-                  AdmissionPro is the unified operating layer for your registrar. We provide the technical foundation for zero-friction student onboarding.
-                </p>
-              </div>
-              <Link href="/programs" className="text-indigo-600 dark:text-indigo-400 font-bold flex items-center gap-2 group">
-                Explore all features <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-              {/* Feature 1: Bento Wide */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="md:col-span-8 p-10 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col md:flex-row items-center gap-10 hover:border-slate-200 dark:hover:border-slate-700 transition-all group"
-              >
-                <div className="flex-1 order-2 md:order-1">
-                  <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
-                    <ShieldCheck className="w-8 h-8" />
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-6 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:bg-slate-900 dark:group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                    <feature.icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Algorithmic Eligibility</h3>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
-                    Execute complex eligibility logic in milliseconds. Our automated engine parses academic records to verify prerequisites with 100% precision.
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3 tracking-tight">{feature.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                    {feature.desc}
                   </p>
-                  <ul className="space-y-3">
-                    {['Real-time merit computation', 'Deterministic rule sets', 'Automated decision routing'].map(item => (
-                      <li key={item} className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="flex-1 order-1 md:order-2 w-full md:w-auto aspect-video md:aspect-square bg-slate-200 dark:bg-slate-800 rounded-3xl overflow-hidden relative shadow-inner">
-                  <Image 
-                    src="https://picsum.photos/seed/scoring/800/800" 
-                    alt="Automation" 
-                    fill 
-                    className="object-cover mix-blend-overlay opacity-50"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20">
-                      <p className="text-3xl font-bold text-indigo-600">89.4%</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Avg. Merit Score</p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Feature 2: Bento Tall */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="md:col-span-4 p-10 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-2xl hover:shadow-indigo-500/5 transition-all group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="w-14 h-14 bg-amber-500 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-amber-500/20 group-hover:rotate-12 transition-transform">
-                    <Clock className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Lifecycle Transparency</h3>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    End-to-end audit trails for every applicant. From initial contact to final enrollment, monitor your intake pipeline with granular visibility.
-                  </p>
-                </div>
-                <div className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex justify-between items-end">
-                    <div className="space-y-1">
-                      <div className="h-1.5 w-16 bg-indigo-600 rounded-full" />
-                      <div className="h-1.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-full" />
-                      <div className="h-1.5 w-12 bg-slate-200 dark:bg-slate-800 rounded-full" />
-                    </div>
-                    <p className="text-4xl font-bold text-slate-200 dark:text-slate-800">24/7</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Feature 3: Small Bento */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-                className="md:col-span-6 p-10 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col items-center text-center group"
-              >
-                <div className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg shadow-emerald-500/20 group-hover:-translate-y-2 transition-transform">
-                  <Globe className="w-8 h-8" />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Omnichannel Enrollment</h3>
-                <p className="text-slate-600 dark:text-slate-400">
-                  Synchronize online registrations and physical walk-in admissions via a single source of truth. Eliminate data silos instantly.
-                </p>
-              </motion.div>
-
-              {/* Feature 4: Small Bento */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-                className="md:col-span-6 p-10 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-slate-900 text-white flex flex-col justify-center relative overflow-hidden"
-              >
-                <div className="relative z-10">
-                  <h3 className="text-2xl font-bold mb-4">Enterprise-Grade Security</h3>
-                  <p className="text-slate-400 leading-relaxed">
-                    Protected by hardened infrastructure and global compliance standards. Secure sensitive PII and financial records with bank-level encryption.
-                  </p>
-                </div>
-                <div className="absolute right-[-10%] bottom-[-10%] opacity-20 rotate-12">
-                   <ShieldCheck className="w-48 h-48" />
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Institutional Section */}
-        <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] p-12 lg:p-20 overflow-hidden relative shadow-2xl shadow-slate-200/50 dark:shadow-slate-950/50">
-              <div className="absolute top-0 right-0 w-1/2 h-full bg-amber-500/5 dark:bg-amber-500/10 rounded-full blur-[100px] translate-x-1/3" />
-              
-              <div className="grid lg:grid-cols-2 gap-12 items-center relative z-10">
-                <div>
-                  <motion.span 
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 mb-6 border border-amber-100 dark:border-amber-500/20"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 mr-2" />
-                    Institutional Enterprise
-                  </motion.span>
-                  <h2 className="text-4xl lg:text-5xl font-display font-bold text-slate-900 dark:text-white mb-6">
-                    Management Portal for <br />
-                    <span className="text-amber-600 dark:text-amber-500">Staff & Administrators</span>
-                  </h2>
-                  <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
-                    Designed for heavy-duty registrar operations. Securely manage program catalogs, evaluate student credentials with automated scoring, and oversee the entire financial pipeline from one unified command center.
-                  </p>
-                  
-                  <div className="space-y-4 mb-10">
-                    {[
-                      "Role-based access control (RBAC)",
-                      "Bulk application processing",
-                      "Financial reconciliation & auditing",
-                      "Automated merit list generation"
-                    ].map((feature, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Link
-                    href="/login?type=institution"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white bg-amber-600 rounded-2xl hover:bg-amber-700 transition-all shadow-lg shadow-amber-900/20 group"
-                  >
-                    Enter Institute Portal
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
-                  </Link>
-                </div>
-                
-                <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-amber-600 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-                  <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-inner">
-                    <Image 
-                      src="https://picsum.photos/seed/dashboard-staff/1200/800" 
-                      alt="Staff Dashboard" 
-                      fill 
-                      className="object-cover opacity-80"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                    <div className="absolute bottom-8 left-8">
-                      <p className="text-white font-bold text-lg">Centralized Intake Control</p>
-                      <p className="text-white/60 text-xs uppercase tracking-widest font-bold">Registry OS v2.4</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-24 bg-slate-950 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-indigo-600/5 backdrop-blur-3xl" />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 divide-x divide-slate-800">
-              {[
-                { label: "Applicant Throughput", value: "50k+", trend: "+12%" },
-                { label: "Selection Accuracy", value: "98%", trend: "High" },
-                { label: "Academic Catalogs", value: "120+", trend: "Live" },
-                { label: "Partner Institutions", value: "45", trend: "Global" }
-              ].map((stat, i) => (
-                <div key={i} className="pl-8 first:pl-0">
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 text-[10px] font-bold uppercase tracking-widest mb-4">
-                    {stat.trend}
-                  </span>
-                  <p className="text-5xl font-display font-bold mb-3 tracking-tighter">{stat.value}</p>
-                  <p className="text-slate-500 text-sm font-semibold uppercase tracking-wider">{stat.label}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* New CTA Section: The Final Push */}
-        <section className="py-32 bg-white dark:bg-slate-950">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-indigo-600 rounded-[3rem] p-12 lg:p-24 text-center text-white relative overflow-hidden shadow-[0_40px_80px_-20px_rgba(79,70,229,0.4)]"
-            >
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-400/20 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
-              
-              <div className="relative z-10 max-w-3xl mx-auto">
-                <h2 className="text-4xl lg:text-6xl font-display font-bold mb-8 leading-tight">
-                  Modernize your <br /> institutional intake.
+        {/* Process Section - High Authority & Professionalism */}
+        <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="grid lg:grid-cols-2 gap-20 items-center">
+              <div>
+                <h2 className="text-4xl lg:text-5xl font-display font-bold mb-8 leading-tight">
+                  Seamless Lifecycle <br /> Management.
                 </h2>
-                <p className="text-xl text-indigo-100 mb-12 leading-relaxed opacity-90">
-                  Scale your enrollment capacity with the industry standard for academic admission management. Deploy AdmissionPro in minutes.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                  <Link
-                    href={profile ? "/dashboard" : "/programs"}
-                    className="w-full sm:w-auto inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-indigo-600 bg-white rounded-2xl hover:bg-indigo-50 transition-all shadow-xl active:scale-95 group"
-                  >
-                    {profile ? "Go to Dashboard" : "Get Started Now"}
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
-                  </Link>
-                  {!isStudent && (
-                    <Link
-                      href="/login?type=institution"
-                      className="w-full sm:w-auto inline-flex items-center justify-center px-10 py-5 text-lg font-bold text-white border-2 border-white/30 rounded-2xl hover:bg-white/10 transition-all active:scale-95"
-                    >
-                      Institutional Login
-                    </Link>
-                  )}
+                <div className="space-y-12">
+                  {[
+                    {
+                      step: "01",
+                      title: "Digital Intake",
+                      desc: "Students register and apply via a zero-friction interface designed for mobile and desktop."
+                    },
+                    {
+                      step: "02",
+                      title: "Automated Evaluation",
+                      desc: "Platform validates credentials against institute-defined rules and prerequisites instantly."
+                    },
+                    {
+                      step: "03",
+                      title: "Secure Enrollment",
+                      desc: "Verified students finalize their placement through authorized officer approval and record commits."
+                    }
+                  ].map((s, i) => (
+                    <div key={i} className="flex gap-6">
+                      <div className="text-4xl font-black text-slate-700 opacity-50 tabular-nums">{s.step}</div>
+                      <div>
+                        <h3 className="text-xl font-bold mb-2">{s.title}</h3>
+                        <p className="text-slate-400 leading-relaxed max-w-md">{s.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <p className="mt-10 text-indigo-200 text-sm font-medium">
-                  Free consultation available for new institutions.
+              </div>
+              
+              <div className="relative">
+                 <div className="absolute inset-0 bg-indigo-500/10 blur-[100px] rounded-full" />
+                 <div className="relative p-10 bg-slate-800/50 border border-slate-700/50 rounded-[3rem] backdrop-blur-sm">
+                    <div className="space-y-6">
+                       <div className="flex items-center gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800">
+                          <Users className="w-5 h-5 text-indigo-400" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Applicants</p>
+                            <p className="text-lg font-black">12,504</p>
+                          </div>
+                       </div>
+                       <div className="flex items-center gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800">
+                          <BarChart3 className="w-5 h-5 text-emerald-400" />
+                          <div>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Growth Index</p>
+                            <p className="text-lg font-black">+24.5% YoY</p>
+                          </div>
+                       </div>
+                       <div className="p-6 bg-slate-950 p-4 border border-indigo-500/20 rounded-2xl">
+                          <div className="flex justify-between items-center mb-4">
+                            <p className="text-xs font-bold text-slate-400 uppercase">Processing Queue</p>
+                            <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black rounded-lg">Operational</span>
+                          </div>
+                          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden relative">
+                            <motion.div 
+                              animate={{ x: ["-100%", "100%"] }}
+                              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                              className="absolute top-0 left-0 h-full w-1/3 bg-indigo-500" 
+                            />
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Integration Hub / Logo Cloud section - Replaced with Text Badges */}
+        <section className="py-24 bg-white dark:bg-slate-950 border-y border-slate-100 dark:border-slate-900">
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-12">Security & Compliance Standards</p>
+              <div className="flex flex-wrap justify-center gap-12 lg:gap-24 opacity-30">
+                 <div className="flex items-center gap-3 font-display font-black text-2xl italic tracking-tighter text-slate-900 dark:text-white">
+                    <ShieldCheck className="w-8 h-8" /> ISO_27001
+                 </div>
+                 <div className="flex items-center gap-3 font-display font-black text-2xl italic tracking-tighter text-slate-900 dark:text-white">
+                    <Lock className="w-8 h-8" /> SOC2_TYPE_II
+                 </div>
+                 <div className="flex items-center gap-3 font-display font-black text-2xl italic tracking-tighter text-slate-900 dark:text-white">
+                    <Globe className="w-8 h-8" /> DATA_EU_RES
+                 </div>
+                 <div className="flex items-center gap-3 font-display font-black text-2xl italic tracking-tighter text-slate-900 dark:text-white">
+                    <ShieldCheck className="w-8 h-8" /> FERPA_CERT
+                 </div>
+              </div>
+           </div>
+        </section>
+
+        {/* Modern Call to Action */}
+        <section className="py-32 bg-slate-50 dark:bg-slate-950">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative p-12 lg:p-24 bg-slate-900 dark:bg-indigo-600 rounded-[3rem] text-center text-white overflow-hidden shadow-2xl"
+            >
+              <div className="absolute inset-0 opacity-10 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+              <div className="relative z-10 max-w-2xl mx-auto">
+                <h2 className="text-3xl lg:text-5xl font-display font-bold mb-6 leading-tight">
+                  Ready to evolve your <br /> institutional operations?
+                </h2>
+                <p className="text-lg text-slate-400 dark:text-indigo-100 mb-12 font-medium">
+                  Join the network of forward-thinking institutions using our infrastructure to scale their academic reach and operational efficiency.
                 </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Link
+                    href="/programs"
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-10 py-5 text-sm font-bold text-slate-900 bg-white rounded-xl hover:bg-slate-50 transition-all shadow-xl shadow-white/5 group"
+                  >
+                    Get Started Now
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-10 py-5 text-sm font-bold text-white border-2 border-white/20 rounded-xl hover:bg-white/10 transition-all font-display"
+                  >
+                    Enterprise Login
+                  </Link>
+                </div>
               </div>
             </motion.div>
           </div>
         </section>
       </main>
 
-      <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-12 transition-colors duration-300">
+      <footer className="bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-900 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-2">
-              <div className="bg-slate-900 dark:bg-indigo-600 p-1.5 rounded-lg">
-                <GraduationCap className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-slate-900 dark:bg-indigo-600 flex items-center justify-center rounded-xl shadow-lg">
+                <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-display font-bold tracking-tight text-slate-900 dark:text-white">AdmissionPro</span>
             </div>
-            <div className="flex gap-8 text-sm text-slate-500 dark:text-slate-400">
-              <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms of Service</Link>
-              <Link href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Contact Support</Link>
+            
+            <div className="flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+              <Link href="#" className="hover:text-indigo-600 transition-colors">Infrastructure</Link>
+              <Link href="#" className="hover:text-indigo-600 transition-colors">Governance</Link>
+              <Link href="#" className="hover:text-indigo-600 transition-colors">Authority</Link>
+              <Link href="#" className="hover:text-indigo-600 transition-colors">Support</Link>
             </div>
-            <p className="text-sm text-slate-400 dark:text-slate-500">© 2026 AdmissionPro. All rights reserved.</p>
+
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-600 tracking-widest uppercase">
+              © 2026 ADMISSION_PRO_INTL
+            </p>
           </div>
         </div>
       </footer>

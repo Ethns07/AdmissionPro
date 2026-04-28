@@ -26,6 +26,10 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "adminId": { "type": "string", "description": "UID of the primary admin for this institute" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "isBanned": { "type": "boolean", "description": "Whether the institute is banned from the platform" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "adminId"]

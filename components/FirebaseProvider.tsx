@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, onSnapshot, getDoc, getDocFromServer, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc, getDocFromServer, updateDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
 // Connection test
@@ -25,6 +25,8 @@ interface UserProfile {
   studentUid?: string; // For parents
   theme?: 'light' | 'dark';
   isApproved?: boolean;
+  instituteId?: string;
+  password?: string;
 }
 
 interface FirebaseContextType {
@@ -67,12 +69,35 @@ export const FirebaseProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           if (docSnap.exists()) {
             const data = docSnap.data() as UserProfile;
             
-            // Sync theme from profile if it exists (deprecated but keeping for profile structure compatibility if needed)
             if (firebaseUser.email === 'masif4732714@gmail.com' && data.role !== 'super_admin') {
               await updateDoc(userDocRef, { role: 'super_admin' });
             }
             setProfile(data);
           } else {
+            // Check if there is an invited profile waiting with the email as key
+            if (firebaseUser.email) {
+              const invitedDocRef = doc(db, 'users', firebaseUser.email.toLowerCase().trim());
+              const invitedSnap = await getDoc(invitedDocRef);
+              
+              if (invitedSnap.exists()) {
+                const invitedData = invitedSnap.data() as any;
+                // Found an invited profile! Move it to the UID-based document
+                const newProfile = {
+                  ...invitedData,
+                  uid: firebaseUser.uid,
+                  isInvited: false, // Mark as no longer pending invite
+                  updatedAt: serverTimestamp()
+                };
+                delete (newProfile as any).password; // Remove plain password for better security
+                
+                await setDoc(userDocRef, newProfile);
+                await deleteDoc(invitedDocRef);
+                setProfile(newProfile as UserProfile);
+                setLoading(false);
+                return;
+              }
+            }
+
             // Default profile for new users (usually students)
             setProfile({
               uid: firebaseUser.uid,

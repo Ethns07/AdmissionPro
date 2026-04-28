@@ -204,8 +204,6 @@ export default function AdminDashboardPage() {
 
   if (!profile) return null;
 
-  const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300">
       <Navbar />
@@ -295,31 +293,25 @@ export default function AdminDashboardPage() {
                     dataKey="date" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: 12 }} 
-                    dy={10}
+                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} 
+                    dy={15}
                   />
                   <YAxis 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: 12 }} 
+                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} 
+                    dx={-10}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      borderRadius: '12px', 
-                      border: 'none', 
-                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                      backgroundColor: '#1e293b',
-                      color: '#f8fafc'
-                    }}
-                    itemStyle={{ color: '#f8fafc' }}
-                  />
+                  <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#4f46e5', strokeWidth: 1, strokeDasharray: '5 5' }} />
                   <Area 
                     type="monotone" 
                     dataKey="count" 
                     stroke="#4f46e5" 
-                    strokeWidth={3}
+                    strokeWidth={4}
                     fillOpacity={1} 
                     fill="url(#colorCount)" 
+                    animationDuration={2000}
+                    activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5', className: 'animate-pulse' }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -398,25 +390,26 @@ export default function AdminDashboardPage() {
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: 12 }} 
-                    dy={10}
+                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} 
+                    dy={15}
+                    hide={programDistribution.length > 5}
                   />
                   <YAxis 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: 12 }} 
+                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 700 }} 
+                    dx={-10}
                   />
                   <Tooltip 
-                    cursor={{ fill: '#f8fafc', opacity: 0.1 }}
-                    contentStyle={{ 
-                      borderRadius: '12px', 
-                      border: 'none', 
-                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                      backgroundColor: '#1e293b',
-                      color: '#f8fafc'
-                    }}
+                    cursor={{ fill: 'rgba(79, 70, 229, 0.05)' }}
+                    content={<ProgramTooltip />}
                   />
-                  <Bar dataKey="value" radius={[6, 6, 0, 0]} barSize={40}>
+                  <Bar 
+                    dataKey="value" 
+                    radius={[12, 12, 0, 0]} 
+                    barSize={60}
+                    animationDuration={1500}
+                  >
                     {programDistribution.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -590,6 +583,45 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
+const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900/90 dark:bg-slate-800/95 backdrop-blur-md border border-slate-700/50 p-4 rounded-2xl shadow-2xl transition-all duration-300 transform scale-110">
+        <p className="text-[10px] font-bold text-indigo-400 mb-1 uppercase tracking-widest">{label}</p>
+        <div className="flex items-end gap-1">
+          <p className="text-2xl font-black text-white leading-none">
+            {payload[0].value}
+          </p>
+          <span className="text-[10px] text-slate-400 font-medium pb-1">Applications</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const ProgramTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-slate-900/95 dark:bg-white p-4 rounded-2xl shadow-2xl border border-slate-800 dark:border-slate-100 min-w-[200px] transition-all duration-300">
+        <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">{label}</p>
+        <div className="flex items-center gap-3">
+           <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white" style={{ backgroundColor: payload[0].fill }}>
+             {payload[0].value}
+           </div>
+           <div>
+             <p className="text-sm font-black text-white dark:text-slate-900">Applicants</p>
+             <p className="text-[10px] text-slate-400">Total volume this period</p>
+           </div>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 const StatCard = ({ title, value, icon: Icon, trend, color }: any) => {
   const colors: any = {
