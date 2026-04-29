@@ -170,7 +170,11 @@ export default function AdminDashboardPage() {
     // 3. Listen to Users for total count and distribution
     let usersQuery = query(collection(db, 'users'));
     if (profile.role !== 'super_admin' && profile.instituteId) {
-      usersQuery = query(collection(db, 'users'), where('instituteId', '==', profile.instituteId));
+      usersQuery = query(collection(db, 'users'), where('instituteId', '==', profile.instituteId), limit(50));
+    } else if (profile.role !== 'super_admin') {
+      // If no institute assigned yet, don't listen
+      setTimeout(() => setIsLoadingData(false), 0);
+      return;
     }
 
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {

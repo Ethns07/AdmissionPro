@@ -115,7 +115,7 @@ export default function StaffManagementPage() {
 
     let q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
     if (profile.role !== 'super_admin' && profile.instituteId) {
-      q = query(collection(db, 'users'), where('instituteId', '==', profile.instituteId), orderBy('createdAt', 'desc'));
+      q = query(collection(db, 'users'), where('instituteId', '==', profile.instituteId), orderBy('createdAt', 'desc'), limit(50));
     }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {

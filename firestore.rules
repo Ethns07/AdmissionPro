@@ -61,7 +61,7 @@ service cloud.firestore {
 
     function isSuperAdmin() {
       return isAuthenticated() && (
-        (request.auth.token.email == "masif4732714@gmail.com") ||
+        (request.auth.token.get('email', '') == "masif4732714@gmail.com") ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin')
       );
@@ -74,21 +74,21 @@ service cloud.firestore {
     function hasRole(role) {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-             getUserData().get('role', '') == role;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == role;
     }
 
     function isAdmin() {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-             getUserData().get('role', '') == 'admin' &&
-             getUserData().get('isApproved', false) == true;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin' &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isApproved', false) == true;
     }
 
     function isAdmissionOfficer() {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-             getUserData().get('role', '') == 'admission_officer' &&
-             getUserData().get('isApproved', false) == true;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admission_officer' &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isApproved', false) == true;
     }
 
     function isStaff() {
@@ -96,12 +96,12 @@ service cloud.firestore {
     }
 
     function belongsToInstitute(instituteId) {
-      return isAuthenticated() && (
-        isSuperAdmin() || (
-          instituteId != null && instituteId != '' && 
-          exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          getUserData().get('instituteId', '') == instituteId
-        )
+      return isAuthenticated() && instituteId != null && instituteId != '' && (
+        request.auth.token.get('email', '') == "masif4732714@gmail.com" ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('instituteId', '') == instituteId
+        ))
       );
     }
 
@@ -121,7 +121,6 @@ service cloud.firestore {
       return data.uid is string && data.uid.size() > 0 &&
              data.email is string && isValidEmail(data.email) &&
              data.role in ['super_admin', 'admin', 'admission_officer', 'student', 'parent', 'guest'] &&
-             data.createdAt is timestamp &&
              (!('isApproved' in data) || data.isApproved is bool) &&
              (!('instituteId' in data) || data.instituteId is string) &&
              (!('assignedPrograms' in data) || data.assignedPrograms is list) &&
@@ -211,48 +210,40 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow get: if (isAuthenticated() && (
-        isOwner(userId) || 
-        isSuperAdmin() || 
+      allow get: if isAuthenticated() && (
+        userId == request.auth.uid || 
+        userId == request.auth.token.get('email', '') ||
+        isSuperAdmin() ||
         (resource != null && (
-          resource.data.get('email', '').lower() == request.auth.token.email.lower() ||
+          resource.data.get('email', '').lower() == request.auth.token.get('email', '').lower() ||
           belongsToInstitute(resource.data.get('instituteId', ''))
         ))
-      )) || (
-        !isAuthenticated() && (
-          // Allow existence check for invited users by email or specific ID
-          (resource == null) ||
-          (resource != null && resource.data.get('isInvited', false) == true)
-        )
       );
       
       allow list: if isAuthenticated() && (
-        isOwner(userId) ||
         isSuperAdmin() || 
         (resource != null && belongsToInstitute(resource.data.get('instituteId', '')))
       );
       
       allow create: if isAuthenticated() && (
-        (isOwner(userId) && isValidUser(request.resource.data) && (
+        (userId == request.auth.uid && isValidUser(request.resource.data) && (
           request.resource.data.role == 'student' ||
-          // Allow creating profile when claiming an invitation
-          exists(/databases/$(database)/documents/users/$(request.auth.token.email))
+          exists(/databases/$(database)/documents/users/$(request.auth.token.get('email', '')))
         )) ||
         isSuperAdmin()
       );
 
       allow update: if isAuthenticated() && (
-        (isOwner(userId) && 
-         // Allow users to update their own docs, but not their role/approval unless it's a claim
-         (request.resource.data.role == resource.data.role || exists(/databases/$(database)/documents/users/$(request.auth.token.email))) && 
-         (request.resource.data.get('isApproved', false) == resource.data.get('isApproved', false) || exists(/databases/$(database)/documents/users/$(request.auth.token.email))) &&
-         request.resource.data.get('instituteId', '') == resource.data.get('instituteId', '') &&
+        (userId == request.auth.uid && 
+         (request.resource.data.role == resource.data.role || isSuperAdmin()) && 
+         (request.resource.data.get('isApproved', false) == resource.data.get('isApproved', false) || isSuperAdmin()) &&
+         (request.resource.data.get('instituteId', '') == resource.data.get('instituteId', '') || isSuperAdmin()) &&
          isValidUser(request.resource.data)) ||
         isSuperAdmin() ||
-        (resource != null && belongsToInstitute(resource.data.get('instituteId', '')) && request.resource.data.get('instituteId', '') == resource.data.get('instituteId', ''))
+        (resource != null && belongsToInstitute(resource.data.get('instituteId', '')))
       );
 
-      allow delete: if isSuperAdmin() || (isAuthenticated() && userId == request.auth.token.email);
+      allow delete: if isSuperAdmin();
     }
 
     match /programs/{programId} {
