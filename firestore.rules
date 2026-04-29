@@ -61,7 +61,7 @@ service cloud.firestore {
 
     function isSuperAdmin() {
       return isAuthenticated() && (
-        (request.auth.token.get('email', '') == "masif4732714@gmail.com") ||
+        (request.auth.token.get('email', '').lower() == "masif4732714@gmail.com") ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin')
       );
@@ -97,7 +97,7 @@ service cloud.firestore {
 
     function belongsToInstitute(instituteId) {
       return isAuthenticated() && instituteId != null && instituteId != '' && (
-        request.auth.token.get('email', '') == "masif4732714@gmail.com" ||
+        request.auth.token.get('email', '').lower() == "masif4732714@gmail.com" ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'super_admin' ||
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('instituteId', '') == instituteId
@@ -130,7 +130,8 @@ service cloud.firestore {
     function isValidInstitute(data) {
       return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
              data.adminId is string &&
-             data.createdAt is timestamp;
+             data.createdAt is timestamp &&
+             (!('isBanned' in data) || data.isBanned is bool);
     }
 
     function isValidProgram(data) {
@@ -190,7 +191,7 @@ service cloud.firestore {
     }
 
     match /institutes/{instituteId} {
-      allow read: if true;
+      allow read: if isSuperAdmin() || resource.data.get('isBanned', false) == false;
       allow create: if isSuperAdmin() && isValidId(instituteId) && isValidInstitute(request.resource.data);
       allow update: if isSuperAdmin() && isValidInstitute(request.resource.data);
       allow delete: if isSuperAdmin();
@@ -247,7 +248,9 @@ service cloud.firestore {
     }
 
     match /programs/{programId} {
-      allow read: if isSuperAdmin() || resource.data.isActive == true || belongsToInstitute(resource.data.instituteId);
+      allow read: if isSuperAdmin() || 
+                    (resource.data.isActive == true && get(/databases/$(database)/documents/institutes/$(resource.data.instituteId)).data.get('isBanned', false) == false) || 
+                    belongsToInstitute(resource.data.instituteId);
       allow create: if (isSuperAdmin() || belongsToInstitute(request.resource.data.instituteId)) && isValidId(programId) && isValidProgram(request.resource.data);
       allow update: if isSuperAdmin() || (belongsToInstitute(resource.data.instituteId) && isValidProgram(request.resource.data));
       allow delete: if isSuperAdmin() || belongsToInstitute(resource.data.instituteId);
@@ -255,15 +258,18 @@ service cloud.firestore {
 
     match /applications/{applicationId} {
       allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
         isOwner(resource.data.studentUid) || 
         belongsToInstitute(resource.data.instituteId) || 
         (hasRole('parent') && resource.data.studentUid == getUserData().get('studentUid', ''))
       );
       allow create: if isAuthenticated() && isValidId(applicationId) && (
+        isSuperAdmin() ||
         (isOwner(request.resource.data.studentUid) && !request.resource.data.isOffline) ||
         belongsToInstitute(request.resource.data.instituteId)
       ) && isValidApplication(request.resource.data);
       allow update: if isAuthenticated() && (
+        isSuperAdmin() ||
         (isOwner(resource.data.studentUid) && 
          request.resource.data.status == resource.data.status && 
          request.resource.data.studentUid == resource.data.studentUid &&
@@ -275,21 +281,25 @@ service cloud.firestore {
         request.resource.data.studentUid == resource.data.studentUid &&
         request.resource.data.programId == resource.data.programId
       ) : true);
-      allow delete: if belongsToInstitute(resource.data.instituteId);
+      allow delete: if isSuperAdmin() || belongsToInstitute(resource.data.instituteId);
     }
 
     match /payments/{paymentId} {
       allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
         belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId) || 
         (exists(/databases/$(database)/documents/applications/$(resource.data.applicationId)) &&
          get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.studentUid == request.auth.uid)
       );
-      allow create: if isAuthenticated() && 
-        belongsToInstitute(get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.instituteId) && 
-        isValidPayment(request.resource.data);
-      allow update: if belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId) && 
-        isValidPayment(request.resource.data);
-      allow delete: if belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId);
+      allow create: if isAuthenticated() && (
+        isSuperAdmin() ||
+        belongsToInstitute(get(/databases/$(database)/documents/applications/$(request.resource.data.applicationId)).data.instituteId)
+      ) && isValidPayment(request.resource.data);
+      allow update: if isSuperAdmin() || (
+        belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId) && 
+        isValidPayment(request.resource.data)
+      );
+      allow delete: if isSuperAdmin() || belongsToInstitute(get(/databases/$(database)/documents/applications/$(resource.data.applicationId)).data.instituteId);
     }
   }
 }

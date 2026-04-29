@@ -22,8 +22,15 @@ export default function ProgramsPage() {
 
   useEffect(() => {
     // Fetch institutes
-    const unsubscribeInstitutes = onSnapshot(collection(db, 'institutes'), (snapshot) => {
+    let instQ = query(collection(db, 'institutes'));
+    if (profile?.role !== 'super_admin') {
+      instQ = query(collection(db, 'institutes'), where('isBanned', '==', false));
+    }
+
+    const unsubscribeInstitutes = onSnapshot(instQ, (snapshot) => {
       setInstitutes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (error) => {
+      console.error("Error fetching institutes:", error);
     });
 
     const isAdmin = profile && ['admin', 'super_admin', 'admission_officer'].includes(profile.role);
@@ -55,6 +62,16 @@ export default function ProgramsPage() {
   }, [profile]);
 
   const filteredPrograms = programs.filter(program => {
+    // Hide programs of banned institutes for non-super admins
+    if (profile?.role !== 'super_admin') {
+      const institute = institutes.find(i => i.id === program.instituteId);
+      // If we have institutes loaded and this one is banned or not found (likely banned), hide it
+      // Note: if institutes are still loading, it might briefly hide or show, but snapshot sync handles it
+      if (institutes.length > 0 && (!institute || institute.isBanned === true)) {
+        return false;
+      }
+    }
+
     const matchesSearch = 
       program.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       program.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -114,21 +131,23 @@ export default function ProgramsPage() {
                 </AnimatePresence>
               </div>
               
-              <div className="md:w-64">
-                <select
-                  value={selectedInstitute}
-                  onChange={(e) => setSelectedInstitute(e.target.value)}
-                  className="w-full h-full px-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 dark:focus:border-indigo-500 shadow-lg shadow-slate-200/10 transition-all font-medium appearance-none"
-                  style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.25rem' }}
-                >
-                  <option value="all">All Institutes</option>
-                  {institutes.map(inst => (
-                    <option key={inst.id} value={inst.id}>{inst.name}</option>
-                  ))}
-                </select>
-              </div>
+              {profile?.role === 'super_admin' && (
+                <div className="md:w-64">
+                  <select
+                    value={selectedInstitute}
+                    onChange={(e) => setSelectedInstitute(e.target.value)}
+                    className="w-full h-full px-4 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-indigo-50 dark:focus:ring-indigo-500/10 focus:border-indigo-600 dark:focus:border-indigo-500 shadow-lg shadow-slate-200/10 transition-all font-medium appearance-none"
+                    style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '1.25rem' }}
+                  >
+                    <option value="all">All Institutes</option>
+                    {institutes.map(inst => (
+                      <option key={inst.id} value={inst.id}>{inst.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
-            {selectedInstitute !== 'all' && (
+            {profile?.role === 'super_admin' && selectedInstitute !== 'all' && (
               <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl w-fit text-sm font-bold">
                 <Info className="w-4 h-4" />
                 Showing programs from: {institutes.find(i => i.id === selectedInstitute)?.name}
