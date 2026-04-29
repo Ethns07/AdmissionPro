@@ -169,7 +169,7 @@ export default function LandingPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.9, duration: 0.8 }}
-                  className="max-w-3xl mx-auto text-base md:text-lg text-slate-600 dark:text-slate-400 mb-16 leading-relaxed font-medium tracking-tight"
+                  className="max-w-4xl mx-auto text-base md:text-lg text-slate-600 dark:text-slate-400 mb-16 leading-relaxed font-medium tracking-tight"
                 >
                   Sophisticated infrastructure for modern academic registrars. Automated eligibility verification, verified credential routing, and secure enrollment pipeline management at institutional scale.
                 </motion.p>
@@ -187,10 +187,10 @@ export default function LandingPage() {
                   >
                     <Link
                       href="/programs"
-                      className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-xs font-black text-white bg-slate-950 dark:bg-indigo-600 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-all shadow-[0_15px_40px_rgba(79,70,229,0.25)] group overflow-hidden relative border border-white/10"
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-[10px] font-black text-white bg-slate-950 dark:bg-indigo-600 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-all shadow-[0_15px_40px_rgba(79,70,229,0.25)] group overflow-hidden relative border border-white/10 tracking-[0.2em] uppercase"
                     >
-                      <span className="relative z-10 flex items-center tracking-widest uppercase">
-                        Browse Programs
+                      <span className="relative z-10 flex items-center">
+                        Access Program Catalog
                         <ArrowRight className="ml-3 w-4 h-4 group-hover:translate-x-2 transition-transform" />
                       </span>
                       <motion.div 
@@ -207,9 +207,9 @@ export default function LandingPage() {
                   >
                     <Link
                       href="/login"
-                      className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-xs font-black text-slate-950 dark:text-white bg-white/20 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-xl hover:bg-white/40 dark:hover:bg-slate-800 transition-all backdrop-blur-2xl shadow-lg tracking-widest uppercase"
+                      className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 text-[10px] font-black text-slate-950 dark:text-white bg-white/20 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800/50 rounded-xl hover:bg-white/40 dark:hover:bg-slate-800 transition-all backdrop-blur-2xl shadow-lg tracking-[0.2em] uppercase"
                     >
-                      Institution Portal
+                      Institutional Console
                     </Link>
                   </motion.div>
                 </motion.div>
@@ -297,78 +297,166 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Process Section - High Authority & Professionalism */}
-        <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-          <div className="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
+        {/* Process Section - Operations Architecture */}
+        <section className="py-32 bg-slate-950 text-white relative overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
+          
+          {/* Architectural Lines */}
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-slate-800 to-transparent" />
+          
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-20 items-center">
-              <div>
-                <h2 className="text-4xl lg:text-5xl font-display font-bold mb-8 leading-tight">
-                  Seamless Lifecycle <br /> Management.
-                </h2>
-                <div className="space-y-12">
+            <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 items-center">
+              <div className="lg:col-span-12 text-center mb-20">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                >
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-indigo-500/10 border border-indigo-500/20 mb-6 font-mono text-[10px] font-black tracking-widest text-indigo-400 uppercase leading-none">
+                    Execution_Logic_v2
+                  </div>
+                  <h2 className="text-4xl lg:text-5xl font-display font-black mb-8 leading-[1.1] tracking-tight">
+                    Seamless Lifecycle Management.
+                  </h2>
+                  <p className="max-w-4xl mx-auto text-base md:text-lg text-slate-400 leading-relaxed font-medium tracking-tight">
+                    Sophisticated infrastructure for modern academic registrars. Automated eligibility verification, verified credential routing, and secure enrollment pipeline management at institutional scale.
+                  </p>
+                </motion.div>
+              </div>
+
+              <div className="lg:col-span-5">
+                <div className="space-y-10 relative">
+                  {/* Progress Line */}
+                  <div className="absolute left-[1.35rem] top-2 bottom-2 w-px bg-slate-800" />
+                  
                   {[
                     {
-                      step: "01",
-                      title: "Digital Intake",
-                      desc: "Students register and apply via a zero-friction interface designed for mobile and desktop."
+                      icon: GraduationCap,
+                      title: "Protocol Intake",
+                      desc: "Zero-friction registration engine with edge-validated credential collect via distributed nodes."
                     },
                     {
-                      step: "02",
-                      title: "Automated Evaluation",
-                      desc: "Platform validates credentials against institute-defined rules and prerequisites instantly."
+                      icon: Cpu,
+                      title: "Intelligent Scoring",
+                      desc: "Proprietary evaluation logic calculates eligibility indices against institutional compliance benchmarks."
                     },
                     {
-                      step: "03",
-                      title: "Secure Enrollment",
-                      desc: "Verified students finalize their placement through authorized officer approval and record commits."
+                      icon: ShieldCheck,
+                      title: "Authority Consensus",
+                      desc: "Immutable record creation via multi-signature officer approval and secure database commits."
                     }
                   ].map((s, i) => (
-                    <div key={i} className="flex gap-6">
-                      <div className="text-4xl font-black text-slate-700 opacity-50 tabular-nums">{s.step}</div>
-                      <div>
-                        <h3 className="text-xl font-bold mb-2">{s.title}</h3>
-                        <p className="text-slate-400 leading-relaxed max-w-md">{s.desc}</p>
+                    <motion.div 
+                      key={i} 
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex gap-8 group"
+                    >
+                      <div className="relative z-10 shrink-0 w-11 h-11 flex items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-slate-500 group-hover:border-indigo-500/50 group-hover:text-indigo-400 transition-all duration-500">
+                        <s.icon className="w-5 h-5" />
+                        <div className="absolute -inset-1 bg-indigo-500/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                    </div>
+                      <div>
+                        <h3 className="text-lg font-bold mb-2 tracking-tight group-hover:text-indigo-400 transition-colors uppercase text-xs font-black tracking-widest underline decoration-indigo-500/10 decoration-2 underline-offset-4">{s.title}</h3>
+                        <p className="text-slate-400 text-sm leading-relaxed max-w-sm font-medium tracking-tight">{s.desc}</p>
+                      </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
               
-              <div className="relative">
-                 <div className="absolute inset-0 bg-indigo-500/10 blur-[100px] rounded-full" />
-                 <div className="relative p-10 bg-slate-800/50 border border-slate-700/50 rounded-[3rem] backdrop-blur-sm">
-                    <div className="space-y-6">
-                       <div className="flex items-center gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800">
-                          <Users className="w-5 h-5 text-indigo-400" />
-                          <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Applicants</p>
-                            <p className="text-lg font-black">12,504</p>
-                          </div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                className="lg:col-span-7 relative"
+              >
+                 <div className="absolute -inset-10 bg-indigo-500/5 blur-[120px] rounded-full" />
+                 
+                 {/* High-Fidelity Dashboard Preview */}
+                 <div className="relative bg-[#0a0c10] border border-slate-800 rounded-[2.5rem] p-10 backdrop-blur-3xl shadow-2xl overflow-hidden shadow-indigo-500/5">
+                    {/* Glass header */}
+                    <div className="flex items-center justify-between mb-10 pb-6 border-b border-white/5">
+                       <div className="flex gap-2">
+                          <div className="w-3 h-3 rounded-full bg-slate-800" />
+                          <div className="w-3 h-3 rounded-full bg-slate-800" />
+                          <div className="w-3 h-3 rounded-full bg-slate-800" />
                        </div>
-                       <div className="flex items-center gap-4 p-4 bg-slate-950/50 rounded-2xl border border-slate-800">
-                          <BarChart3 className="w-5 h-5 text-emerald-400" />
-                          <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Growth Index</p>
-                            <p className="text-lg font-black">+24.5% YoY</p>
-                          </div>
-                       </div>
-                       <div className="p-6 bg-slate-950 p-4 border border-indigo-500/20 rounded-2xl">
-                          <div className="flex justify-between items-center mb-4">
-                            <p className="text-xs font-bold text-slate-400 uppercase">Processing Queue</p>
-                            <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] font-black rounded-lg">Operational</span>
-                          </div>
-                          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden relative">
-                            <motion.div 
-                              animate={{ x: ["-100%", "100%"] }}
-                              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                              className="absolute top-0 left-0 h-full w-1/3 bg-indigo-500" 
-                            />
-                          </div>
+                       <div className="flex items-center gap-4">
+                          <div className="px-3 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-black text-emerald-400 uppercase tracking-widest">System_Online</div>
+                          <div className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Institutional_Grid_A1</div>
                        </div>
                     </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+                       {[
+                         { label: "Active_Threads", value: "24", icon: Zap, color: "text-amber-400" },
+                         { label: "Latency_Index", value: "12ms", icon: Clock, color: "text-indigo-400" },
+                         { label: "Success_Rate", value: "99.98%", icon: CheckCircle2, color: "text-emerald-400" }
+                       ].map((stat, i) => (
+                         <div key={i} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
+                            <div className="flex items-center gap-3 mb-3">
+                               <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                               <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
+                            </div>
+                            <p className="text-xl font-black font-mono tracking-tighter">{stat.value}</p>
+                         </div>
+                       ))}
+                    </div>
+
+                    <div className="p-8 rounded-3xl bg-gradient-to-br from-indigo-600/5 to-blue-600/5 border border-indigo-500/20 relative overflow-hidden">
+                       <div className="relative z-10">
+                          <div className="flex justify-between items-end mb-8">
+                             <div>
+                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Workload_Intensity</p>
+                                <p className="text-2xl font-black tracking-tight">Eligibility Queue Alpha</p>
+                             </div>
+                             <div className="bg-slate-900 px-4 py-2 rounded-xl border border-white/5 text-right">
+                                <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Queue_Priority</p>
+                                <p className="text-sm font-mono font-bold text-white">CRITICAL_HI</p>
+                             </div>
+                          </div>
+                          
+                          <div className="space-y-6">
+                             <div className="relative">
+                                <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden">
+                                   <motion.div 
+                                     animate={{ width: ["10%", "95%", "30%", "85%"] }}
+                                     transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+                                     className="h-full bg-gradient-to-r from-indigo-600 to-blue-500 shadow-[0_0_20px_rgba(79,70,229,0.5)]" 
+                                   />
+                                </div>
+                                <motion.div 
+                                  animate={{ opacity: [0.5, 1, 0.5] }}
+                                  transition={{ duration: 2, repeat: Infinity }}
+                                  className="absolute -top-6 left-[65%] text-[10px] font-mono font-bold text-indigo-400"
+                                >
+                                  OPTIMIZING...
+                                </motion.div>
+                             </div>
+                             
+                             <div className="flex justify-between items-center">
+                                <div className="flex -space-x-3">
+                                   {[1,2,3,4].map(i => (
+                                      <div key={i} className="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] font-black">U{i}</div>
+                                   ))}
+                                   <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-indigo-600 flex items-center justify-center text-[10px] font-black">+12</div>
+                                </div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                                   Current_Session: <span className="text-white">Active</span>
+                                </div>
+                             </div>
+                          </div>
+                       </div>
+                       
+                       {/* Background decorative elements */}
+                       <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full" />
+                    </div>
                  </div>
-              </div>
+              </motion.div>
             </div>
           </div>
         </section>
